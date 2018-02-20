@@ -7,7 +7,7 @@
 
 //const_interator class//
 template <typename T>
-List<T>::const_iterator::const_iterator{
+List<T>::const_iterator::const_iterator(){
 	current = nullptr;
 }
 
@@ -122,8 +122,6 @@ List<T>::List(const List & rhs){
 }
 template <typename T>
 List<T>::List(List && rhs): theSize{rhs.theSize}, head{rhs.head}, tail{rhs.tail}{
-	rhs.theSize=0;
-	rhs.head = nullptr;
 	rhs.tail = nullptr;	
 }
 
@@ -145,13 +143,16 @@ List<T>::List(const_iterator start, const_iterator end){
 	}
 }
 
+/*
 template <typename T>
-List<T>::List<std::initializer_list<T> iList>{
+List<T>::List(std::initializer_list<T> iList){
 	init();
-	for(auto x = iList.begin(); x !+ iList.end(); x++){
+	for(auto x = iList.begin(); x != iList.end(); x++){
 		push_back(*x);
 	}
 }
+*/
+
 
 template <typename T>
 List<T>::~List(){
@@ -161,28 +162,31 @@ List<T>::~List(){
 }
 
 template <typename T>
-const typename List<T>::List& List<T>::operator=(const List &rhs){
+const typename List<T>::List& List<T>::operator= (const List &rhs){
 	List copy = rhs;
 	std::swap(*this, copy);
 	return *this;
 }
 
 template <typename T>
-typename List<T>::List& List<T>::operator=(List && rhs){
+typename List<T>::List& List<T>::operator= (List && rhs){
 	std::swap(theSize, rhs.theSize);
 	std::swap(head, rhs.head);
 	std::swap(tail, rhs.tail);
 	return *this;
 }
 
+
 template <typename T>
-typename List<T>::List& List<T>::List::operator=(std::initializer_list<T> iList){
+typename List<T>::List& List<T>::List::operator = (std::initializer_list<T> iList){
 	clear();
 	for(auto x = iList.begin(); x != iList.end(); x++){
 		push_back(*x);
 	}
 	return *this;
 }
+
+
 
 template <typename T>
 int List<T>::size() const{
@@ -194,7 +198,7 @@ bool List<T>::empty() const{
 	return (theSize==0);
 }
 
-template <typename>
+template <typename T>
 void List<T>::clear(){
 	while(!empty()){
 		pop_front();
@@ -228,7 +232,7 @@ const T& List<T>::front() const{
 
 template <typename T>
 T& List<T>::back(){
-	return --(*end()):
+	return --(*end());
 }
 
 template <typename T>
@@ -247,16 +251,165 @@ void List<T>::push_front(T&& val){
 }
 
 template <typename T>
+void List<T>::push_back(const T& val){
+	insert(end(), val);
+}
 
+template <typename T>
+void List<T>::push_back(T&& val){
+	insert(end(), std::move(val));
+}
 
+template <typename T>
+void List<T>::pop_front(){
+	erase(begin());
+}
 
-void List::init(){
+template <typename T>
+void List<T>::pop_back(){
+	erase(--end());
+}
+
+template <typename T>
+typename List<T>::iterator List<T>::insert(iterator itr, const T & val){
+	Node *p = itr.current;
+	++theSize;
+	return(p->prev = p->prev->next = new Node {val, p->prev, p});
+}
+
+template <typename T>
+typename List<T>::iterator List<T>::insert(iterator itr, T && val){
+	Node *p = itr.current;
+	++theSize;
+	return(p->prev = p->prev->next = new Node {std::move(val), p->prev, p});
+}
+
+template <typename T>
+typename List<T>::iterator List<T>::erase(iterator itr){
+	Node *p = itr.current;
+	iterator retVal(p->next);
+	p->prev->next = p->next;
+	p->next->prev = p->prev;
+	delete p;
+	--theSize;
+	return retVal;
+}
+
+//???????????? for loop beneath is weird!!!
+
+template <typename T>
+typename List<T>::iterator List<T>::erase(iterator start, iterator end){
+	for(iterator itr = start; itr != end;){
+		itr = erase(itr);
+	}
+	return end;
+}
+
+template <typename T>
+void List<T>::init(){
 	theSize = 0;
 	head = new Node;
 	tail = new Node;
 	head->next = tail;
 	tail->prev = head;
 }
+
+template <typename T>
+typename List<T>::iterator List<T>::begin(){
+	return iterator(head->next);
+}
+
+template <typename T>
+typename List<T>::const_iterator List<T>::begin() const{
+	return const_iterator(head->next);
+}
+
+template <typename T>
+typename List<T>::iterator List<T>::end(){
+	return iterator(tail);
+}
+
+template <typename T>
+typename List<T>::const_iterator List<T>::end() const{
+	return const_iterator(tail);
+}
+
+template <typename T>
+void List<T>::remove(const T& val){
+	for(auto x = this->begin(); x != this->end(); x++){
+		if(val == *x){
+			erase(x);
+		}
+	}
+}
+
+//????? Weird For Loop below!!!
+/*
+template <typename T>
+template <typename PREDICATE>
+void List<T>::remove_if(PREDICATE pred){
+	for(auto x = begin(); x!= end();){
+		if(pred(*x) == true){	
+			x = erase(x);
+		}
+		else{
+			x++;
+		}
+	}
+}
+*/
+
+template <typename T>
+void List<T>::print(std::ostream & os, char ofc) const{
+	for(auto x = this->begin(); x != this->end(); x++){
+		while(*x != ofc){
+			os << *x << " ";
+		}
+	}
+}
+
+//???? Weird for LOop below!!!
+
+template <typename T>
+bool operator==(const List<T> & lhs, const List<T> & rhs){
+	if(lhs.size() != rhs.size()){
+		return false;
+	}
+	else{
+		for(auto x = lhs.begin(), i = rhs.begin(); x != lhs.end(); ++x, i++){
+			if(*x != *i){
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+template <typename T>
+bool operator!=(const List<T> & lhs, const List<T> & rhs){
+	if(!(lhs==rhs)){
+		return true;
+	}
+	else{
+		return false;
+	}
+}
+
+//??? weird for loop below!!!
+
+template <typename T>
+std::ostream& operator<<(std::ostream & os, const List<T> & l){
+	for(auto x = l.begin(); x != l.end(); x++){
+		os << *x << " ";
+	}
+	return os;
+}
+
+
+
+
+
+
 
 
 
