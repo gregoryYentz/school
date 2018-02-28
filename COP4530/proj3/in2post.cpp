@@ -1,58 +1,78 @@
 #include<stack>
 #include<iostream>
 #include<string>
-#include<sstream>
 
 using namespace std;
 
-void postResult(string, string);
-
 int main(){
 	string infix, postfix;
+//	int intResult;
 	stack<char> opStack;
 
+	int parenth;
+
 	while(true){
+		parenth = 0;
+
+		//input to infix string
 		cout << "Enter infix expression (\"exit\" to quit): ";
 		getline(cin, infix, '\n');
 
-		if(infix == "exit"){
-			break;
+		//exit program
+		if(infix=="exit"){
+			cout<<endl;
+			return 0;
 		}
 
-		for(unsigned int i = 0; i < infix.length(); i++){
+		//parse infix string
+		for(unsigned int i=0; i<infix.length(); i++){
+			if(infix[i]=='('){
+				parenth=parenth+1;
+			}
+			else if(infix[i]==')'){
+				parenth=parenth-1;
+			}
+
+			//operators pushed to the stack
+			else if((infix[i]=='+')||(infix[i]=='-')||(infix[i]=='*')||(infix[i]=='/')){
+				opStack.push(infix[i]);
+			}
 			
-			// Handles all variable. Throws error for variables beginning with ' _ '.
-			if(((infix[i]>=65)&&(infix[i]<=90))||((infix[i]>=97)&&(infix[i]<=122))||(infix[i]==95)){
-				while(((infix[i]>=65)&&(infix[i]<=90))||((infix[i]>=97)&&(infix[i]<=122))||((infix[i]>=48)&&(infix[i]<=57))||(infix[i]==95)){
-					postfix += infix[i];
-					++i;
-				}
-				postfix += " ";
-//				postfix += infix[i];
-//				if(infix[i+1]==32){
-//					postfix += " ";
-//				}
-				if((infix[0]==95)||((infix[i]==95)&&(infix[i-1]==32))){
-					cout<<endl<<"Error: Infix expression: "<<infix<<" has invalid variable name!"<<endl;
-					infix.clear();
-					postfix.clear();
-					break;
+			//handling numbers
+			else if(((infix[i]>='0')&&(infix[i]<='9'))||(infix[i]=='.')){
+				cout<<infix[i];
+				
+			}
+
+			//handling variables
+			if(((infix[i]>='a')&&(infix[i]<='z'))||((infix[i]>='A')&&(infix[i]<='Z'))){
+				for(unsigned int j=i; ((j<infix.length())&&(infix[j]!=' '))==true; j++){
+					cout<<infix[j];
+					i=j-1;
 				}
 			}
 
-			// Handles all integers and floating point numbers
-		}
-		if(!postfix.empty()){
-			postResult(infix, postfix);
-		}
-		infix.clear();
-		postfix.clear();
-	}	
-	cout << endl;
-	return 0;
-}
+			//handling spaces for output string
+			else if(infix[i]==' '){
+				cout<<" ";
+			}
 
-void postResult(string infix, string postfix){
-	cout<<"Infix: "<<infix<<endl;
-	cout<<"Postfix: "<<postfix<<endl;
+			//error handling
+			else{
+				cout<<"ERROR"<<endl;
+			}
+			
+		}
+
+		cout<<endl;
+		//print operators from stack
+		unsigned int j=opStack.size();
+		for(unsigned int i=0; i<j; i++){
+			cout<<opStack.top();
+			opStack.pop();			
+		}	
+		cout<<endl;
+	}
+
+	return 0;
 }
