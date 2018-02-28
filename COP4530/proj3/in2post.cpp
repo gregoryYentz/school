@@ -6,18 +6,24 @@ using namespace std;
 
 int main(){
 	string infix, postfix;
-//	int intResult;
 	stack<char> opStack;
 
 	int parenth;
 
 	while(true){
+		infix.clear();
 		parenth = 0;
 
 		//input to infix string
 		cout << "Enter infix expression (\"exit\" to quit): ";
 		getline(cin, infix, '\n');
 
+		//check for end of file
+		if(infix[0]==0){
+			cout<<endl;
+			return 0;
+		}
+		
 		//exit program
 		if(infix=="exit"){
 			cout<<endl;
@@ -26,9 +32,24 @@ int main(){
 
 		//parse infix string
 		for(unsigned int i=0; i<infix.length(); i++){
-			if(infix[i]=='('){
+			
+			//handling variables
+			if(((infix[i]>='a')&&(infix[i]<='z'))||((infix[i]>='A')&&(infix[i]<='Z'))){
+				for(unsigned int j=i; ((j<infix.length())&&(infix[j]!=' '))==true; j++){
+//					cout<<infix[j];
+					postfix += infix[j];
+					i=j;
+				}
+//				cout<<" ";
+				postfix += " ";
+			}
+			
+			//precedence addition
+			else if(infix[i]=='('){
 				parenth=parenth+1;
 			}
+
+			//precedence subtraction
 			else if(infix[i]==')'){
 				parenth=parenth-1;
 			}
@@ -40,31 +61,33 @@ int main(){
 			
 			//handling numbers
 			else if(((infix[i]>='0')&&(infix[i]<='9'))||(infix[i]=='.')){
-				cout<<infix[i];
-				
-			}
-
-			//handling variables
-			if(((infix[i]>='a')&&(infix[i]<='z'))||((infix[i]>='A')&&(infix[i]<='Z'))){
 				for(unsigned int j=i; ((j<infix.length())&&(infix[j]!=' '))==true; j++){
-					cout<<infix[j];
-					i=j-1;
+//					cout<<infix[j];
+					postfix += infix[j];
+					i=j;
 				}
+//				cout<<" ";
+				postfix += " ";
 			}
 
 			//handling spaces for output string
 			else if(infix[i]==' '){
-				cout<<" ";
+				//do nothing
 			}
 
 			//error handling
 			else{
-				cout<<"ERROR"<<endl;
+				cout<<"ERROR";
+				break;
 			}
 			
 		}
 
-		cout<<endl;
+		//print postfix expression and evaluation
+		cout<<endl<<"Postfix expression: "<<postfix<<endl;
+		cout<<"Postfix evaluation: "<<postfix<<" = ";
+//		cout<<evaluate(postfix)<<endl;
+
 		//print operators from stack
 		unsigned int j=opStack.size();
 		for(unsigned int i=0; i<j; i++){
@@ -72,6 +95,8 @@ int main(){
 			opStack.pop();			
 		}	
 		cout<<endl;
+		infix.clear();
+		postfix.clear();
 	}
 
 	return 0;
