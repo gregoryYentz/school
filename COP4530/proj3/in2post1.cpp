@@ -53,7 +53,9 @@ int main(){
 	
 			//open parenthesis
 			else if(infix[i]=='('){
-				opStack.push(infix[i]);
+				while(opStack.top()!='('){
+					opStack.push(infix[i]);
+				}
 			}
 
 			//close parenthesis
@@ -69,18 +71,24 @@ int main(){
 			//handling variables
 			else if(((infix[i]>='a')&&(infix[i]<='z'))||((infix[i]>='A')&&(infix[i]<='Z'))){
 				for(unsigned int j=i; ((j<infix.length())&&(infix[j]!=' '))==true; j++){
+					//cout<<infix[j];
 					postfix += infix[j];
 					i=j;
 				}
+				//cout<<" ";
 				postfix += " ";
 			}
+
+
 
 			//handling numbers
 			else if(((infix[i]>='0')&&(infix[i]<='9'))||(infix[i]=='.')){
 				for(unsigned int j=i; ((j<infix.length())&&(infix[j]!=' '))==true; j++){
+//					cout<<infix[j];
 					postfix += infix[j];
 					i=j;
 				}
+//				cout<<" ";
 				postfix += " ";
 			}
 
