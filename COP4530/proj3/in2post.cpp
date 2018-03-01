@@ -1,3 +1,11 @@
+/*
+	Gregory Yentz
+	gcy16
+	COP4530
+	Project 3
+
+*/
+
 #include "stack.h"
 #include<iostream>
 #include<string>

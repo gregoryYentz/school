@@ -1,125 +1,134 @@
+/*
+	Gregory Yentz
+	gcy16
+	COP4530
+	Project 3
+
+*/
+
+//default constructor
 template<typename T>
-// zero-argument constructor
-Stack<T>::Stack() {
-	// call default constructor, since nested member class lst has well defined construcotr
-	// no need to define here
+Stack<T>::Stack(){
+
 }
 
+//deconstructor
 template<typename T>		
-// destructor
-Stack<T>::~Stack() {
-	// leave this blank: dynamic allocated memory is not used yet
+Stack<T>::~Stack(){
+
 }
 
+//copy constructor
 template<typename T>
-// copy constructor
-Stack<T>::Stack( const Stack<T>& a ) {
-	lst = a.lst; // STL list has copy assignment itself
+Stack<T>::Stack(const Stack<T>& a){
+	lst = a.lst;
 }
 
+//move constructor
 template<typename T>
-// move constructor
-Stack<T>::Stack( Stack<T> && a ) {
-	lst = std::move( a.lst ); // move r-value to lst
+Stack<T>::Stack(Stack<T> && a){
+	lst = std::move(a.lst);
 }
 
+//copy assignment operator
 template<typename T>
-// copy assignment operator=
-Stack<T>& Stack<T>::operator=( const Stack<T>& a ) {
-	if( *this != a ) // check self assignment
+Stack<T>& Stack<T>::operator=(const Stack<T>& a){
+	if(*this != a){ // check self assignment
 		lst = a.lst; // call lst's copy-assignment operator;
+	}
 	return *this;
 }
 
+//move assignment operator=
 template<typename T>
-// move assignment operator=
-Stack<T>& Stack<T>::operator=( Stack && a ) {
-	lst = std::move( a.lst ); // move r-value directly to lst
+Stack<T>& Stack<T>::operator=(Stack && a){
+	lst = std::move(a.lst); // move r-value directly to lst
 	return *this;
 }
-// end of default constructor, as well as "the BIG five"
 
+//returns true if stack contains no elements
 template<typename T>
-// true, if Stack<T> contains no elements, false otherwise
-bool Stack<T>::empty() const {
+bool Stack<T>::empty() const{
 	return this->size() == 0; // true only if the size is 0
 }
 
+//delete all elements
 template<typename T>
-// delete all elements from the Stack<T>
-void Stack<T>::clear() {
+void Stack<T>::clear(){
 	lst.clear();
 }
 
+//add x to top of stack, copy version
 template<typename T>
-// add x to the Stack structure, copy version
-void Stack<T>::push( const T& x ) {
-	lst.push_back( x );
+void Stack<T>::push(const T& x){
+	lst.push_back(x);
 }
 
+//add x to top of stack, move version
 template<typename T>
-// add x to the Stack structure, move version
-void Stack<T>::push( T && x ) {
-	lst.push_back( std::move( x ) );
+void Stack<T>::push(T && x){
+	lst.push_back(std::move( x ));
 }
 
+//removes the top element off the stack
 template<typename T>
-// remove and discards the most recently added element (at top of stack)
-void Stack<T>::pop() {
-	if( !(this->empty()) ) // check empty Stack
+void Stack<T>::pop(){
+	if(!(this->empty())){ // check empty Stack
 		lst.pop_back();
+	}
 }
 
+//references the most recently added element on the stack
 template<typename T>		
-// returns a reference to the most recently added element ( at the top of stack ), as a modifiable L-value
-T& Stack<T>::top() {
+T& Stack<T>::top(){
 	return lst.back();
 }
 
+//accessor, returns the const reference of the most recently added element
 template<typename T>
-// accessor, returns the const reference of the most recently added element
-const T& Stack<T>::top() const {
+const T& Stack<T>::top() const{
 	return lst.back();
 	// this is because if the calling obj is constant_qualified, the back() member_function
 	// returns const_reference type; otherwise it returns variant reference type
 }
 
+//returns the number of elements in the stack
 template<typename T>		
-// returns the number of elements stored in the Stack<T>
-int Stack<T>::size() const {
+int Stack<T>::size() const{
 	return lst.size();
 }
 
 template<typename T>		
 // print elements of Stack<T> in of sequence of their being added, first added first printed. every two elements seprated by ofc
-void Stack<T>::print( std::ostream& os, char ofc ) const {
-	for( auto itr = lst.begin(); itr != lst.end(); ++itr )
+void Stack<T>::print(std::ostream& os, char ofc) const{
+	for(auto itr = lst.begin(); itr != lst.end(); ++itr){
 		os << *itr << ofc;
-	// os << lst.front();
+	}
 }
 
 // non-member global functions
 // invokes the print() method to print the Stack<T> a in the specified ostream
 template<typename T>
-std::ostream& operator<<( std::ostream& os, const Stack<T>& a ) {
-	a.print( os ); // the ofc character is not mentioned, so by default ofc = ' '
+std::ostream& operator<<(std::ostream& os, const Stack<T>& a){
+	a.print(os); // the ofc character is not mentioned, so by default ofc = ' '
 	return os;
 }
 
 // return true if the two compared Stacks have the same elements, in the same order; otherwise false
 template<typename T>
-bool operator==( const Stack<T>& a, const Stack<T>& b ) {
-	if( a.size() != b.size() )
+bool operator==(const Stack<T>& a, const Stack<T>& b){
+	if(a.size() != b.size()){
 		return false;
-	else {
-		Stack<T> cpy_a = std::move( a );
-		Stack<T> cpy_b = std::move( b );
+	}
+	else{
+		Stack<T> cpy_a = std::move(a);
+		Stack<T> cpy_b = std::move(b);
 		bool cmp;
-		do {
-			cmp = ( cpy_a.top() == cpy_b.top() );
+		do{
+			cmp = (cpy_a.top() == cpy_b.top());
 			cpy_a.pop();
 			cpy_b.pop();
-		}while( cmp && ( !cpy_a.empty() ) );
+		}while(cmp && (!cpy_a.empty()));
 
 		return cmp;
 	}
@@ -127,25 +136,26 @@ bool operator==( const Stack<T>& a, const Stack<T>& b ) {
 
 // opposite to the case ==
 template<typename T>
-bool operator!=( const Stack<T>& a, const Stack<T>& b ) {
-	return !( a == b );
+bool operator!=(const Stack<T>& a, const Stack<T>& b){
+	return !(a == b);
 }
 
 // return true if every elements in Stack a is smaller than the corresponding elements of Stack b
 template<typename T>
-bool operator<=( const Stack<T>& a, const Stack<T>& b ) {
-	if( a.size() > b.size() )
+bool operator<=(const Stack<T>& a, const Stack<T>& b){
+	if(a.size() > b.size()){
 		return false;
-	else {
-		Stack<T> cpy_a = std::move( a ); // replicate a non-const Stack<T> version of obj a
-		Stack<T> cpy_b = std::move( b ); // do the same thing for obj b
+	}
+	else{
+		Stack<T> cpy_a = std::move(a); // replicate a non-const Stack<T> version of obj a
+		Stack<T> cpy_b = std::move(b); // do the same thing for obj b
 		bool cmp;
-		do {
-			cmp = ( cpy_a.top() <= cpy_b.top() );
+		do{
+			cmp = (cpy_a.top() <= cpy_b.top());
 			cpy_a.pop();
 			cpy_b.pop();
 			
-		}while( cmp && ( !cpy_a.empty() ) );
+		}while(cmp && (!cpy_a.empty()));
 
 		return cmp;
 	}
