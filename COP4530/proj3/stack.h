@@ -1,80 +1,81 @@
-#ifndef STACK_H
-#define STACK_H
+#ifndef LIST_STACK_H
+#define LIST_STACK_H
 #include<iostream>
+#include<list>
 
 namespace cop4530 {
-	template <typename T>
-		class Stack {
-			private:
-				struct Node{
 
+template<typename T>
+class Stack
+{
+	public: 
+		// zero-argument constructor
+		Stack();
+		
+		// destructor
+		~Stack();
+		
+		// copy constructor
+		Stack( const Stack<T>& a );
+		
+		// move constructor
+		Stack( Stack<T> && a );
+		
+		// copy assignment operator=
+		Stack<T>& operator=( const Stack<T>& a );
+		
+		// move assignment operator=
+		Stack<T>& operator=( Stack<T> && a );
+// end of default constructor, as well as "the BIG five"
+		
+		// true, if Stack<T> contains no elements, false otherwise
+		bool empty() const;
+		
+		// delete all elements from the Stack<T>
+		void clear();
+		
+		// add x to the Stack structure, copy version
+		void push( const T& x );
+		
+		// add x to the Stack structure, move version
+		void push( T && x );
+		
+		// remove and discards the most recently added element (at top of stack)
+		void pop();
+		
+		// returns a reference to the most recently added element ( at the top of stack ), as a modifiable L-value
+		T& top();
+		
+		// accessor, returns the const reference of the most recently added element
+		const T& top() const;
+		
+		// returns the number of elements stored in the Stack<T>
+		int size() const;
+		
+		// print elements of Stack<T> in of sequence of their being added, first added first printed. every two elements seprated by ofc
+		void print( std::ostream& os, char ofc = ' ' ) const;
+	
+	private:
+		std::list<T> lst;
+};
 
-				};
+// non-member global functions
+// invokes the print() method to print the Stack<T> a in the specified ostream
+template<typename T>
+std::ostream& operator<<( std::ostream& os, const Stack<T>& a );
 
-			public:
-				
-				//default constructor
-				Stack();
+// return true if the two compared Stacks have the same elements, in the same order; otherwise false
+template<typename T>
+bool operator==( const Stack<T>& a, const Stack<T>& b );
 
-				//copy constructor
-				Stack(const Stack<T>&);
+// opposite to the case ==
+template<typename T>
+bool operator!=( const Stack<T>& a, const Stack<T>& b );
 
-				//move constructor
-				Stack(Stack<T>&&);
+// return true if every elements in Stack a is smaller than the corresponding elements of Stack b
+template<typename T>
+bool operator<=( const Stack<T>& a, const Stack<T>& b );
 
-				//deconstructor
-				~Stack();
-
-				//copy assignment operator
-				Stack<T>& operator=(const Stack<T>&);
-
-				//move assignment operator
-				Stack<T>& operator=(Stack<T>&&);
-
-				//returns true if the stack contains no elements
-				bool empty() const;
-
-				//delete all elements from the stack
-				void clear();
-
-				//adds x to the stack, copy version
-				void push(const T& x);
-
-				//adds x to the stack, move version
-				void push(T&& x);
-
-				//removes and discards the most recently added element of the stack
-				void pop();
-
-				//mutator that returns a reference to the most recently added element of the stack
-				T& top();
-
-				//accessor that returns the most recently added element of the stack
-				const T& top() const;
-
-				//returns the number of elements stored in the stack
-				int size() const;
-
-				//prints elements of the stack to ostream
-				void print(std::ostream& os, char ofc=' ') const;
-
-
-
-		}
-
-	template <typename T>
-		bool operator==(const Stack<T>&, const Stack<T>&);
-
-	template <typename T>
-		bool operator!=(const Stack<T>&, const Stack<T>&);
-
-	template <typename T>
-		bool operator<=(const Stack<T>& a, const Stack<T>& b);
-
-	template <typename T>
-		std::ostream& operator<<(std::ostream& os, const Stack<T>& a);
-
-	#include "Stack.hpp"
-}	//end of namespace 4530
-
+#include "stack.hpp"
+} // end of namespace cop4530
 #endif

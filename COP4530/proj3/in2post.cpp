@@ -1,9 +1,10 @@
-#include<stack>
+#include "stack.h"
 #include<iostream>
 #include<string>
 #include<cmath>
 
 using namespace std;
+using namespace cop4530;
 
 bool isOp(char);
 bool isNum(char);
@@ -13,7 +14,7 @@ float performOp(char, float, float);
 
 int main(){
 	string infix, postfix;
-	stack<char> opStack;
+	Stack<char> opStack;
 
 	while(true){
 		infix.clear();
@@ -173,7 +174,7 @@ int prec(char temp){
 
 // Convert postfix to decimal value
 float evaluate(string expression){
-	stack<float> S;
+	Stack<float> S;
 	for(unsigned int i = 0;i< expression.length();i++){
 
 		// Ignore spaces 
@@ -196,6 +197,7 @@ float evaluate(string expression){
 				operand = (operand*10) + (expression[i] - '0'); 
 				i++;
 			}
+			//handle decimals
 			if(expression[i]=='.'){
 				++i;
 				float dec = 1.0;
