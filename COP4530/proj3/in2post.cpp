@@ -1,14 +1,15 @@
 #include<stack>
 #include<iostream>
 #include<string>
+#include<cmath>
 
 using namespace std;
 
 bool isOp(char);
 bool isNum(char);
 int prec(char);
-int evaluate(string);
-int performOp(char, int, int);
+float evaluate(string);
+float performOp(char, float, float);
 
 int main(){
 	string infix, postfix;
@@ -171,8 +172,8 @@ int prec(char temp){
 }
 
 // Convert postfix to decimal value
-int evaluate(string expression){
-	stack<int> S;
+float evaluate(string expression){
+	stack<float> S;
 	for(unsigned int i = 0;i< expression.length();i++){
 
 		// Ignore spaces 
@@ -180,20 +181,31 @@ int evaluate(string expression){
 
 		// If character is operator, pop two elements from stack, perform operation and push the result back. 
 		else if(isOp(expression[i])){
-			int operand2 = S.top(); 
+			float operand2 = S.top(); 
 			S.pop();
-			int operand1 = S.top(); 
+			float operand1 = S.top(); 
 			S.pop();
-			int result = performOp(expression[i], operand1, operand2);
+			float result = performOp(expression[i], operand1, operand2);
 			S.push(result);
 		}
 
 		// convert string numbers to decimal numbers
-		else if(isNum(expression[i])){
-			int operand = 0; 
+		else if(isNum(expression[i])||expression[i]=='.'){
+			float operand = 0; 
 			while(i<expression.length()&&isNum(expression[i])){
 				operand = (operand*10) + (expression[i] - '0'); 
 				i++;
+			}
+			if(expression[i]=='.'){
+				++i;
+				float dec = 1.0;
+				float temp=0.0;
+				while(i<expression.length()&&isNum(expression[i])){
+					temp = temp+((expression[i]-'0')/pow(10.0, dec));
+					dec=dec+1.0;
+					i++;
+				}
+				operand+=temp;
 			}
 			i--;
 			S.push(operand);
@@ -203,7 +215,7 @@ int evaluate(string expression){
 }
 
 // Function to perform an operation and return output. 
-int performOp(char operation, int operand1, int operand2)
+float performOp(char operation, float operand1, float operand2)
 {
 	if(operation == '+') return operand1 +operand2;
 	else if(operation == '-') return operand1 - operand2;
