@@ -5,20 +5,13 @@
 using namespace std;
 using namespace cop4530;
 
-// Function object types, for use with remove_if()
-class isOdd {
-public:
-  bool operator() (const int& value) { return (value%2)!=0; }
-};
-
-class LongerThanFive {
-public:
-  bool operator() (const string& s) { return (s.size() > 5); }
-};
-
 int main() {
+	// typedef List<int>::iterator ITRINT;
+	// typedef List<string>::iterator ITRSTR;
 	List<int> l1;
+	// ITRINT itr;
 	List<string> l2;
+	// ITRSTR itr2;
 	const int num = 10;
 
 	cout << "Testing list with integer values ..." << endl;
@@ -110,16 +103,8 @@ int main() {
 	cout << "testing other constructors" << endl;
 	List<int> l_t1(8, 5);
 	List<int> l_t2(l_t1.begin(), l_t1.end());
-	List<int> iList {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 100, 90, 80, 70, 60, 50};
 
 	cout << l_t2 << endl;
-	cout << iList << endl;
-	cout << "testing init_list assignment operator" << endl;
-	iList = {4, 8, 15, 16, 23, 42, 99, 100, 200, 211, 353, 400, 501, 503};
-	cout << iList << endl;
-        cout << "Removing odd elements of this list" << endl;
-        iList.remove_if(isOdd());
-	cout << iList << endl;
 
 	cout << "testing comparison operators" << endl;
 	if (l_t1 == l_t2) {
@@ -131,7 +116,7 @@ int main() {
 	cout << "remove one element from l_t1" << endl;
 	l_t1.pop_back();
 	if (l_t1 == l_t2) {
-		cout << "wrong" << endl;
+		cout << "wronng" << endl;
 	} else {
 		cout << "they contain different values" << endl;
 	}
@@ -264,12 +249,5 @@ int main() {
 		cout << "they contain different values" << endl;
 	}
 
-	List<string> sList {"Harry", "Ron", "Hermione", "Dumbledore", "McGonagall", "Snape", 
-				"Luna", "Draco", "Neville", "Fred", "George", "Ginny"};
-
-        cout << sList << endl;
-	cout << "Removing names longer than 5 letters" << endl;
-        sList.remove_if(LongerThanFive());
-        cout << sList << endl;
 
 }
