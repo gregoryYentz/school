@@ -32,69 +32,70 @@ int main(){
 	
 	int i;
 	int j;
-	for(i=0; i<size; i++){
-		binInst[i]=decimal_to_binary(machineInst[i]);
-	}
-
-
-//Test prints
-/*	for(i=0; i<size; i++){
-		printf("Machine Instruction %d: %d\n", i, machineInst[i]);
-		printf("Binary Instruction %d:  %s\n\n", i, binInst[i]);
-	}
-*/
-
 	int temp;
 	for(i=0; i<size; i++){
-		temp = 0;
-		for(j=0; j<6; j++){
-			temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-5));
-		}	
-		line[i].instOP = temp;
-		temp = 0;
-		for(j=6; j<11; j++){
-			temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-10));
-		}
-		line[i].instRS = temp;
-		temp = 0;
-		for(j=11; j<16; j++){
-			temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-15));
-		}
-		line[i].instRT = temp;
-		temp = 0;
-		if(line[i].instOP==32||line[i].instOP==34||line[i].instOP==0){
-			line[i].instType = 1;
-			line[i].instImm = 999;
-			for(j=16; j<21; j++){
-				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-20));
-			}
-			line[i].instRD = temp;
+		if(machineInst[i]!=0){
+			binInst[i]=decimal_to_binary(machineInst[i]);
+			for(j=0; j<6; j++){
+				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-5));
+			}	
+			line[i].instOP = temp;
 			temp = 0;
-			for(j=21; j<26; j++){
-				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-26));
+			for(j=6; j<11; j++){
+				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-10));
 			}
-			line[i].instShamt = temp;
+			line[i].instRS = temp;
 			temp = 0;
-			for(j=26; j<32; j++){
-				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-31));
+			for(j=11; j<16; j++){
+				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-15));
 			}
-			line[i].instFunct = temp;
+			line[i].instRT = temp;
 			temp = 0;
+			if(line[i].instOP==32||line[i].instOP==34||line[i].instOP==0){
+				line[i].instType = 1;
+				line[i].instImm = 999;
+				for(j=16; j<21; j++){
+					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-20));
+				}
+				line[i].instRD = temp;
+				temp = 0;
+				for(j=21; j<26; j++){
+					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-25));
+				}
+				line[i].instShamt = temp;
+				temp = 0;
+				for(j=26; j<32; j++){
+					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-31));
+				}
+				line[i].instFunct = temp;
+				temp = 0;
+			}
+			else if(line[i].instOP==35||line[i].instOP==43||line[i].instOP==12||line[i].instOP==13||line[i].instOP==5){
+				line[i].instType = 2;
+				line[i].instRD = 999;
+				line[i].instShamt = 999;
+				line[i].instFunct = 999;
+				for(j=16; j<32; j++){
+					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-31));
+				}
+				line[i].instImm = temp;
+				temp = 0;
+			}
+			line[i].instAddress = i*4;
 		}
-		else if(line[i].instOP==35||line[i].instOP==43||line[i].instOP==12||line[i].instOP==13||line[i].instOP==5){
-			line[i].instType = 2;
+		else{
+			line[i].instType = 3;
+			line[i].instOP = 999;
+			line[i].instRS = 999;
+			line[i].instRT = 999;
 			line[i].instRD = 999;
 			line[i].instShamt = 999;
 			line[i].instFunct = 999;
-			for(j=16; j<32; j++){
-				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-31));
-			}
-			line[i].instImm = temp;
-			temp = 0;
+			line[i].instImm = 999;
 		}
-		line[i].instAddress = i*4;
 	}
 
+//Test Printing	
 	for(i=0; i<size; i++){
 		printf("Line[%d].instAddress: %d\n", i, line[i].instAddress);
 		printf("Line[%d].instType:  %d\n", i, line[i].instType);
@@ -140,6 +141,9 @@ void printOP(int instOP, int instFunct){
 	}
 	else if(instOP==5){
 		printf("bne\n");
+	}
+	else if(instOP==999){
+		printf("NOOP\n");
 	}
 	else{
 		printf("ERROR!\n");
