@@ -1,6 +1,5 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include<string.h>
 
 struct INSTRUCT{
 	int instAddress;
@@ -14,7 +13,7 @@ struct INSTRUCT{
 	int instImm;		//only I type
 };
 
-void printOP(int);
+void printOP(int, int);
 char *decimal_to_binary(int);
 int ipow(int, int);
 
@@ -49,7 +48,6 @@ int main(){
 	for(i=0; i<size; i++){
 		temp = 0;
 		for(j=0; j<6; j++){
-			//temp1 = *(binInst[i]+j)-48;
 			temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-5));
 		}	
 		line[i].instOP = temp;
@@ -108,27 +106,31 @@ int main(){
 		printf("Line[%d].instFunct: %d\n", i, line[i].instFunct);
 		printf("Line[%d].instImm:   %d\n", i, line[i].instImm);
 		
-		printOP(line[i].instOP);
+		printOP(line[i].instOP, line[i].instFunct);
 	}
 
 	return 0;
 }
 
-void printOP(int instOP){
-	if(instOP==32){
-		printf("add\n");
-	}
-	else if(instOP==34){
-		printf("sub\n");
-	}
-	else if(instOP==35){
+
+//prints out the instOP of an instruction
+void printOP(int instOP, int instFunct){
+	if(instOP==35){
 		printf("lw\n");
 	}
 	else if(instOP==43){
 		printf("sw\n");
 	}
 	else if(instOP==0){
-		printf("sll\n");
+		if(instFunct==32){
+			printf("add\n");
+		}
+		else if(instFunct==34){
+			printf("sub\n");
+		}
+		else if(instFunct==0){
+			printf("sll\n");
+		}
 	}
 	else if(instOP==12){
 		printf("andi\n");
@@ -144,10 +146,7 @@ void printOP(int instOP){
 	}
 }
 
-
-
-
-
+//converts the decimal input to a binary string
 char *decimal_to_binary(int n){
 	int c, d, count;
 	char *pointer;
@@ -174,6 +173,7 @@ char *decimal_to_binary(int n){
 	return  pointer;
 }
 
+//power function for integers; used in binary string to integer conversion
 int ipow(int base, int exp){
     int result = 1;
     while (exp){
