@@ -4,7 +4,7 @@
 struct INSTRUCT{
 	//string instInst;
 	int instAddress;
-	int instType;		//1=R, 2=I, 3=NOOP
+	int instType;		//0=HALT, 1=R, 2=I, 3=NOOP
 	int instOP;
 	int instRS;
 	int instRT;
@@ -18,12 +18,12 @@ int PC;
 int dataMem[32];
 int regFile[32];
 
-struct IF_ID{
+struct IF_ID_{
 	//string Instruction;
 	int PCPlus4;
 };
 
-struct ID_EX{
+struct ID_EX_{
 	//string Instruction;
 	int PCPlus4;
 	int branchTarget;
@@ -35,25 +35,25 @@ struct ID_EX{
 	int rd;
 };
 
-struct EX_MEM{
+struct EX_MEM_{
 	//string Instruction;
 	int aluResult;
 	int writeDataReg;
 	int writeReg;
 };
 
-struct MEM_WB{
+struct MEM_WB_{
 	//string Instruction;
 	int writeDataMem;
 	int writeDataALU;
 	int writeReg;
 };
 
-void printOP(int, int);
+void printOP(int, int);				//modify to create a string in INSTRUCT to print MIPS code
 char *decimal_to_binary(int);
 int ipow(int, int);
 
-void printOutput();
+void printOutput(struct IF_ID_ *IF_ID, struct ID_EX_ *ID_EX, struct EX_MEM_ *EX_MEM, struct MEM_WB_ *MEM_WB);
 
 int main(){
 	signed int machineInst[100];		//signed integer input
@@ -67,11 +67,11 @@ int main(){
 	}
 
 	struct INSTRUCT line[size];
-	
+
 	int i;
 	int j;
 	int temp;
-	for(i=0; i<size; i++){
+	for(i=0; i<size; i++){		//fill the INSTRUCT structure with the parsed data from input
 		if(machineInst[i]!=0){
 			binInst[i]=decimal_to_binary(machineInst[i]);
 			for(j=0; j<6; j++){
@@ -91,7 +91,7 @@ int main(){
 			temp = 0;
 			if(line[i].instOP==32||line[i].instOP==34||line[i].instOP==0){
 				line[i].instType = 1;
-				line[i].instImm = 999;
+				line[i].instImm = 999999999;
 				for(j=16; j<21; j++){
 					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-20));
 				}
@@ -110,9 +110,9 @@ int main(){
 			}
 			else if(line[i].instOP==35||line[i].instOP==43||line[i].instOP==12||line[i].instOP==13||line[i].instOP==5){
 				line[i].instType = 2;
-				line[i].instRD = 999;
-				line[i].instShamt = 999;
-				line[i].instFunct = 999;
+				line[i].instRD = 999999999;
+				line[i].instShamt = 999999999;
+				line[i].instFunct = 999999999;
 				for(j=16; j<32; j++){
 					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-31));
 				}
@@ -121,19 +121,21 @@ int main(){
 			}
 			line[i].instAddress = i*4;
 		}
-		else{
+		else{		//filling NOOP with 999999999
 			line[i].instType = 3;
-			line[i].instOP = 999;
-			line[i].instRS = 999;
-			line[i].instRT = 999;
-			line[i].instRD = 999;
-			line[i].instShamt = 999;
-			line[i].instFunct = 999;
-			line[i].instImm = 999;
+			line[i].instOP = 999999999;
+			line[i].instRS = 999999999;
+			line[i].instRT = 999999999;
+			line[i].instRD = 999999999;
+			line[i].instShamt = 999999999;
+			line[i].instFunct = 999999999;
+			line[i].instImm = 999999999;
 		}
 	}
 
 //Test Printing	
+/*
+	printf("%d\n", size);
 	for(i=0; i<size; i++){
 		printf("Line[%d].instAddress: %d\n", i, line[i].instAddress);
 		printf("Line[%d].instType:  %d\n", i, line[i].instType);
@@ -147,15 +149,38 @@ int main(){
 		
 		printOP(line[i].instOP, line[i].instFunct);
 	}
+*/
 
+
+	//initialize structures and fill default variables
 	for(i=0; i<32; i++){
-		j = 31-i;
-		dataMem[i] = j;
-		regFile[i] = i;
+		dataMem[i] = 0;
+		regFile[i] = 0;
 	}
-		
-	printOutput();
-	printOutput();
+	struct IF_ID_ IF_ID; 
+		IF_ID.PCPlus4 = 1;
+	struct ID_EX_ ID_EX;
+		ID_EX.PCPlus4 = 2;
+		ID_EX.branchTarget = 3;
+		ID_EX.readData1 = 4;
+		ID_EX.readData2 = 5;
+		ID_EX.immed = 6;
+		ID_EX.rs = 7;
+		ID_EX.rt = 8;
+		ID_EX.rd = 9;
+	struct EX_MEM_ EX_MEM;
+		EX_MEM.aluResult = 10;
+		EX_MEM.writeDataReg = 11;
+		EX_MEM.writeReg = 12;
+	struct MEM_WB_ MEM_WB;
+		MEM_WB.writeDataMem = 13;
+		MEM_WB.writeDataALU = 14;
+		MEM_WB.writeReg = 15;
+
+	for(i=0; i<size; i++){
+		printOutput(&IF_ID, &ID_EX, &EX_MEM, &MEM_WB);
+	}
+
 
 	return 0;
 }
@@ -189,7 +214,7 @@ void printOP(int instOP, int instFunct){
 	else if(instOP==5){
 		printf("bne\n");
 	}
-	else if(instOP==999){
+	else if(instOP==999999999){
 		printf("NOOP\n");
 	}
 	else{
@@ -237,8 +262,8 @@ int ipow(int base, int exp){
     return result;
 }
 
-void printOutput(){
-	printf("********************\n");
+void printOutput(struct IF_ID_ *IF_ID, struct ID_EX_ *ID_EX, struct EX_MEM_ *EX_MEM, struct MEM_WB_ *MEM_WB){
+	printf("\n********************\n");
 	printf("State at the beginning of cycle 0:\n");
 	printf("\tPC = 0\n");
 	printf("\tData Memory:\n");
@@ -277,25 +302,25 @@ void printOutput(){
 	printf("\t\tregFile[15] = %d \tregFile[31] = %d\n", regFile[15], regFile[31]);
 	printf("\tIF/ID:\n");
 	printf("\t\tInstruction: NOOP\n");
-	printf("\t\tPCPlus4: 0\n");
+	printf("\t\tPCPlus4: %d\n", IF_ID->PCPlus4);
 	printf("\tID/EX:\n");
 	printf("\t\tInstruction: NOOP\n");
-	printf("\t\tPCPlus4: 0\n");
-	printf("\t\tbranchTarget: 0\n");
-	printf("\t\treadData1: 0\n");
-	printf("\t\treadData2: 0\n");
-	printf("\t\timmed: 0\n");
-	printf("\t\trs: 0\n");
-	printf("\t\trt: 0\n");
-	printf("\t\trd: 0\n");
+	printf("\t\tPCPlus4: %d\n", ID_EX->PCPlus4);
+	printf("\t\tbranchTarget: %d\n", ID_EX->branchTarget);
+	printf("\t\treadData1: %d\n", ID_EX->readData1);
+	printf("\t\treadData2: %d\n", ID_EX->readData2);
+	printf("\t\timmed: %d\n", ID_EX->immed);
+	printf("\t\trs: %d\n", ID_EX->rs);
+	printf("\t\trt: %d\n", ID_EX->rt);
+	printf("\t\trd: %d\n", ID_EX->rd);
 	printf("\tEX/MEM:\n");
 	printf("\t\tInstruction: NOOP\n");
-	printf("\t\taluResult: 0\n");
-	printf("\t\twriteDataReg: 0\n");
-	printf("\t\twriteReg: 0\n");
+	printf("\t\taluResult: %d\n", EX_MEM->aluResult);
+	printf("\t\twriteDataReg: %d\n", EX_MEM->writeDataReg);
+	printf("\t\twriteReg: %d\n", EX_MEM->writeReg);
 	printf("\tMEM/WB:\n");
 	printf("\t\tInstruction: NOOP\n");
-	printf("\t\twriteDataMem: 0\n");
-	printf("\t\twriteDataALU: 0\n");
-	printf("\t\twriteReg: 0\n\n");
+	printf("\t\twriteDataMem: %d\n", MEM_WB->writeDataMem);
+	printf("\t\twriteDataALU: %d\n", MEM_WB->writeDataALU);
+	printf("\t\twriteReg: %d\n", MEM_WB->writeReg);
 }
