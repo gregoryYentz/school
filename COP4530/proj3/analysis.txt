@@ -1,6 +1,6 @@
 Implimentation:
 	I decided to use STL list to impliment my Stack<T>
-	Within each lists' node, there are basically two pointers referencing to the previous and next nodes
+	Within each lists node, there are basically two pointers referencing to the previous and next nodes
 
 Complexity Analysis:
 	Stack<T>::clear() member function is really just using the member function of stl list<T>::clear(). Therefore, the run-time analysis of Stack<T> is equal to std list<T>
