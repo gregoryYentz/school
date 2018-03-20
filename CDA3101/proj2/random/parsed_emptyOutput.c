@@ -14,7 +14,7 @@ struct INSTRUCT{
 	int instImm;		//only I type
 };
 
-int PC = 0;
+int PC;
 int dataMem[32];
 int regFile[32];
 
@@ -49,16 +49,11 @@ struct MEM_WB_{
 	int writeReg;
 };
 
-void fillIF_ID(struct IF_ID_ *IF_ID);
-void fillID_EX(struct ID_EX_ *ID_EX, struct INSTRUCT line[], int i);
-void fillEX_MEM(struct EX_MEM_ *EX_MEM, struct INSTRUCT line[], int i);
-void fillMEM_WB(struct MEM_WB_ *MEM_WB, struct INSTRUCT line[], int i);
-
 void printOP(int, int);				//modify to create a string in INSTRUCT to print MIPS code
 char *decimal_to_binary(int);
 int ipow(int, int);
 
-void printOutput(struct IF_ID_ *IF_ID, struct ID_EX_ *ID_EX, struct EX_MEM_ *EX_MEM, struct MEM_WB_ *MEM_WB, int i);
+void printOutput(struct IF_ID_ *IF_ID, struct ID_EX_ *ID_EX, struct EX_MEM_ *EX_MEM, struct MEM_WB_ *MEM_WB);
 
 int main(){
 	signed int machineInst[100];		//signed integer input
@@ -71,142 +66,77 @@ int main(){
 		}
 	}
 
-	struct INSTRUCT line[size+8];		//3 NOOPs, size Instructions, HALT, 3 NOOPs
+	struct INSTRUCT line[size];
 
 	int i;
 	int j;
 	int temp;
-	for(i=-1; i<size; i++){		//fill the INSTRUCT structure with the parsed data from input
+	for(i=0; i<size; i++){		//fill the INSTRUCT structure with the parsed data from input
 		if(machineInst[i]!=0){
 			binInst[i]=decimal_to_binary(machineInst[i]);
-			
-			//fill instOP
 			for(j=0; j<6; j++){
 				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-5));
 			}	
-			line[i+4].instOP = temp;
+			line[i].instOP = temp;
 			temp = 0;
-
-			//fill instRS
 			for(j=6; j<11; j++){
 				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-10));
 			}
-			line[i+4].instRS = temp;
+			line[i].instRS = temp;
 			temp = 0;
-
-			//fill instRT
 			for(j=11; j<16; j++){
 				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-15));
 			}
-			line[i+4].instRT = temp;
+			line[i].instRT = temp;
 			temp = 0;
-
-			//R Types
-			if(line[i+4].instOP==32||line[i+4].instOP==34||line[i+4].instOP==0){
-				line[i+4].instType = 1;
-				//line[i+4].instImm = 999999999;
-				line[i+4].instImm = 0;
-
-				//fill instRD
+			if(line[i].instOP==32||line[i].instOP==34||line[i].instOP==0){
+				line[i].instType = 1;
+				line[i].instImm = 999999999;
 				for(j=16; j<21; j++){
 					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-20));
 				}
-				line[i+4].instRD = temp;
+				line[i].instRD = temp;
 				temp = 0;
-
-				//fill instShamt
 				for(j=21; j<26; j++){
 					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-25));
 				}
-				line[i+4].instShamt = temp;
+				line[i].instShamt = temp;
 				temp = 0;
-
-				//fill instFunct
 				for(j=26; j<32; j++){
 					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-31));
 				}
-				line[i+4].instFunct = temp;
+				line[i].instFunct = temp;
 				temp = 0;
 			}
-
-			//I Types
-			else if(line[i+4].instOP==35||line[i+4].instOP==43||line[i+4].instOP==12||line[i+4].instOP==13||line[i+4].instOP==5){
-				line[i+4].instType = 2;
-				//line[i+4].instRD = 999999999;
-				//line[i+4].instShamt = 999999999;
-				//line[i+4].instFunct = 999999999;
-				line[i+4].instRD = 0;
-				line[i+4].instShamt = 0;
-				line[i+4].instFunct = 0;
-
-				//fill instImm
+			else if(line[i].instOP==35||line[i].instOP==43||line[i].instOP==12||line[i].instOP==13||line[i].instOP==5){
+				line[i].instType = 2;
+				line[i].instRD = 999999999;
+				line[i].instShamt = 999999999;
+				line[i].instFunct = 999999999;
 				for(j=16; j<32; j++){
 					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-31));
 				}
-				line[i+4].instImm = temp;
+				line[i].instImm = temp;
 				temp = 0;
 			}
-
-			//fill instAddress
-			line[i+4].instAddress = (i+1)*4;
+			line[i].instAddress = i*4;
 		}
 		else{		//filling NOOP with 999999999
-			line[i+4].instType = 3;
-			line[i+4].instOP = 0;
-			//line[i+4].instRS = 999999999;
-			//line[i+4].instRT = 999999999;
-			//line[i+4].instRD = 999999999;
-			//line[i+4].instShamt = 999999999;
-			//line[i+4].instFunct = 999999999;
-			//line[i+4].instImm = 999999999;
-			line[i+4].instRS = 0;
-			line[i+4].instRT = 0;
-			line[i+4].instRD = 0;
-			line[i+4].instShamt = 0;
-			line[i+4].instFunct = 999999999;
-			line[i+4].instImm = 0;
+			line[i].instType = 3;
+			line[i].instOP = 999999999;
+			line[i].instRS = 999999999;
+			line[i].instRT = 999999999;
+			line[i].instRD = 999999999;
+			line[i].instShamt = 999999999;
+			line[i].instFunct = 999999999;
+			line[i].instImm = 999999999;
 		}
-	}
-
-	//Used for ID/EX, EX/MEM, MEM/WB for first real instruction IF/ID
-	for(i=0; i<4; i++){
-		line[i].instAddress = 0;
-		line[i].instType = 3;
-		line[i].instOP = 0;
-		line[i].instRS = 999999999;
-		line[i].instRT = 999999999;
-		line[i].instRD = 999999999;
-		line[i].instShamt = 999999999;
-		line[i].instFunct = 999999999;
-		line[i].instImm = 999999999;
-	}
-
-	line[size+4].instAddress = i*4;
-	line[size+4].instType = 0;
-	line[size+4].instOP = 1;
-	line[size+4].instRS = 999999999;
-	line[size+4].instRT = 999999999;
-	line[size+4].instRD = 999999999;
-	line[size+4].instShamt = 999999999;
-	line[size+4].instFunct = 999999999;
-	line[size+4].instImm = 999999999;
-
-	for(i=size+5; i<size+8; i++){
-		line[i].instAddress = 0;
-		line[i].instType = 3;
-		line[i].instOP = 0;
-		line[i].instRS = 999999999;
-		line[i].instRT = 999999999;
-		line[i].instRD = 999999999;
-		line[i].instShamt = 999999999;
-		line[i].instFunct = 999999999;
-		line[i].instImm = 999999999;
 	}
 
 //Test Printing	
-/*
+
 	printf("%d\n", size);
-	for(i=0; i<(size+8); i++){
+	for(i=0; i<size; i++){
 		printf("Line[%d].instAddress: %d\n", i, line[i].instAddress);
 		printf("Line[%d].instType:  %d\n", i, line[i].instType);
 		printf("Line[%d].instOP:    %d\n", i, line[i].instOP);
@@ -219,7 +149,7 @@ int main(){
 		
 		printOP(line[i].instOP, line[i].instFunct);
 	}
-*/
+
 
 
 	//initialize structures and fill default variables
@@ -246,133 +176,14 @@ int main(){
 		MEM_WB.writeDataMem = 13;
 		MEM_WB.writeDataALU = 14;
 		MEM_WB.writeReg = 15;
-/*
+
 	for(i=0; i<size; i++){
 		printOutput(&IF_ID, &ID_EX, &EX_MEM, &MEM_WB);
 	}
-*/
 
-	for(i=3; i<size+8; i++){
-		fillIF_ID(&IF_ID);
-		fillID_EX(&ID_EX, line, i);
-		fillEX_MEM(&EX_MEM, line, i);
-		fillMEM_WB(&MEM_WB, line, i);
-		printOutput(&IF_ID, &ID_EX, &EX_MEM, &MEM_WB, i-2);
-		printOP(line[i].instOP, line[i].instFunct);
-		PC=PC+4;
-	}
 
 	return 0;
 }
-
-void fillIF_ID(struct IF_ID_ *IF_ID){
-	IF_ID->PCPlus4 = PC;
-}
-
-void fillID_EX(struct ID_EX_ *ID_EX, struct INSTRUCT line[], int i){
-	ID_EX->PCPlus4 = line[i-1].instAddress;
-//	ID_EX->branchTarget = line[i-1].	;
-//	ID_EX->readData1 = line[i-1].		;
-//	ID_EX->readData2 = line[i-1].		;
-	ID_EX->immed = line[i-1].instImm;
-	ID_EX->rs = line[i-1].instRS;
-	ID_EX->rt = line[i-1].instRT;
-	ID_EX->rd = line[i-1].instRD;
-	if(line[i-1].instOP==0 && line[i-1].instFunct==999999999){
-		ID_EX->branchTarget = 0;
-		ID_EX->readData1 = 0;
-		ID_EX->readData2 = 0;
-		ID_EX->immed = 0;
-		ID_EX->rs = 0;
-		ID_EX->rt = 0;
-		ID_EX->rd = 0;
-	}
-}
-void fillEX_MEM(struct EX_MEM_ *EX_MEM, struct INSTRUCT line[], int i){
-	if((line[i-2].instType==0) || (line[i-2].instType==3)){
-		EX_MEM->aluResult = 0;
-		EX_MEM->writeDataReg = 0;
-		EX_MEM->writeReg = 0;
-	}
-
-	//ADD
-	else if(line[i-2].instOP==0 && line[i-2].instFunct==32){
-		regFile[line[i-2].instRD] = regFile[line[i-2].instRS] + regFile[line[i-2].instRT];
-		EX_MEM->aluResult = regFile[line[i-2].instRD];
-	}
-
-	//SUB
-	else if(line[i-2].instOP==0 && line[i-2].instFunct==34){
-		regFile[line[i-2].instRD] = regFile[line[i-2].instRS] - regFile[line[i-2].instRT];
-		EX_MEM->aluResult = regFile[line[i-2].instRD];
-	}
-
-	//SLL
-	else if(line[i-2].instOP==0 && line[i-2].instFunct==0){
-		regFile[line[i-2].instRD] = regFile[line[i-2].instRT] << line[i-2].instShamt;
-		EX_MEM->aluResult = regFile[line[i-2].instRD];
-		//EX_MEM->aluResult = 999;
-	}
-
-	//ANDI
-	else if(line[i-2].instOP==12){
-		regFile[line[i-2].instRT] = regFile[line[i-2].instRS] & line[i-2].instImm;
-		EX_MEM->aluResult = regFile[line[i-2].instRT];
-	}
-
-	//ORI
-	else if(line[i-2].instOP==13){
-		regFile[line[i-2].instRT] = regFile[line[i-2].instRS] | line[i-2].instImm;
-		//printf("\t%d\t", regFile[line[i-2].instRS]);
-		//printf("\t%d\t", line[i-2].instImm);
-		EX_MEM->aluResult = regFile[line[i-2].instRT];
-		//EX_MEM->aluResult = 999;
-	}
-
-	//LW
-	else if(line[i-2].instOP==35){
-		regFile[line[i-2].instRT] = dataMem[regFile[line[i-2].instRS] + line[i-2].instImm];
-		EX_MEM->aluResult = regFile[line[i-2].instRS] + line[i-2].instImm;
-	}
-
-	//SW
-	else if(line[i-2].instOP==43){
-		regFile[line[i-2].instRT] = dataMem[regFile[line[i-2].instRS] + line[i-2].instImm];
-		EX_MEM->aluResult = regFile[line[i-2].instRT];
-	}
-
-	//EX_MEM->aluResult = 999;
-
-
-}
-void fillMEM_WB(struct MEM_WB_ *MEM_WB, struct INSTRUCT line[], int i){
-	if((line[i-3].instType==0) || (line[i-3].instType==3)){
-		MEM_WB->writeDataMem = 0;
-		MEM_WB->writeDataALU = 0;
-		MEM_WB->writeReg = 0;
-	}
-
-	//R Type
-	else if(line[i-3].instType==1){
-		MEM_WB->writeDataMem = 0;
-		MEM_WB->writeDataALU = 0;
-		MEM_WB->writeReg = 0;
-
-	}
-
-	//I Type
-	else if(line[i-3].instType==2){
-		MEM_WB->writeDataMem = 0;
-		MEM_WB->writeDataALU = 0;
-		MEM_WB->writeReg = 0;
-
-	}
-
-
-}
-
-
-
 
 
 //prints out the instOP of an instruction
@@ -393,9 +204,6 @@ void printOP(int instOP, int instFunct){
 		else if(instFunct==0){
 			printf("sll\n");
 		}
-		else if(instFunct==999999999){
-			printf("NOOP\n");
-		}
 	}
 	else if(instOP==12){
 		printf("andi\n");
@@ -406,8 +214,8 @@ void printOP(int instOP, int instFunct){
 	else if(instOP==5){
 		printf("bne\n");
 	}
-	else if(instOP==1){
-		printf("HALT\n");
+	else if(instOP==999999999){
+		printf("NOOP\n");
 	}
 	else{
 		printf("ERROR!\n");
@@ -454,10 +262,10 @@ int ipow(int base, int exp){
     return result;
 }
 
-void printOutput(struct IF_ID_ *IF_ID, struct ID_EX_ *ID_EX, struct EX_MEM_ *EX_MEM, struct MEM_WB_ *MEM_WB, int i){
+void printOutput(struct IF_ID_ *IF_ID, struct ID_EX_ *ID_EX, struct EX_MEM_ *EX_MEM, struct MEM_WB_ *MEM_WB){
 	printf("\n********************\n");
-	printf("State at the beginning of cycle %d:\n", i);
-	printf("\tPC = %d\n", PC);
+	printf("State at the beginning of cycle 0:\n");
+	printf("\tPC = 0\n");
 	printf("\tData Memory:\n");
 	printf("\t\tdataMem[0] = %d\t\tdataMem[16] = %d\n", dataMem[0], dataMem[16]);
 	printf("\t\tdataMem[1] = %d\t\tdataMem[17] = %d\n", dataMem[1], dataMem[17]);
