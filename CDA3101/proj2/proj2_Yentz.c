@@ -76,6 +76,7 @@ int main(){
 	int i;
 	int j;
 	int temp;
+
 	for(i=-1; i<size; i++){		//fill the INSTRUCT structure with the parsed data from input
 		if(machineInst[i]!=0){
 			binInst[i]=decimal_to_binary(machineInst[i]);
@@ -227,6 +228,12 @@ int main(){
 		dataMem[i] = 0;
 		regFile[i] = 0;
 	}
+
+	for(i=0; i<32; i++){
+		scanf("%d", &dataMem[i]);
+
+	}
+
 	struct IF_ID_ IF_ID; 
 		IF_ID.PCPlus4 = 1;
 	struct ID_EX_ ID_EX;
@@ -289,6 +296,7 @@ void fillID_EX(struct ID_EX_ *ID_EX, struct INSTRUCT line[], int i){
 	}
 }
 void fillEX_MEM(struct EX_MEM_ *EX_MEM, struct INSTRUCT line[], int i){
+	int temp;
 	if((line[i-2].instType==0) || (line[i-2].instType==3)){
 		EX_MEM->aluResult = 0;
 		EX_MEM->writeDataReg = 0;
@@ -297,48 +305,48 @@ void fillEX_MEM(struct EX_MEM_ *EX_MEM, struct INSTRUCT line[], int i){
 
 	//ADD
 	else if(line[i-2].instOP==0 && line[i-2].instFunct==32){
-		regFile[line[i-2].instRD] = regFile[line[i-2].instRS] + regFile[line[i-2].instRT];
-		EX_MEM->aluResult = regFile[line[i-2].instRD];
+		temp = regFile[line[i-2].instRS] + regFile[line[i-2].instRT];
+		EX_MEM->aluResult = temp;
 	}
 
 	//SUB
 	else if(line[i-2].instOP==0 && line[i-2].instFunct==34){
-		regFile[line[i-2].instRD] = regFile[line[i-2].instRS] - regFile[line[i-2].instRT];
-		EX_MEM->aluResult = regFile[line[i-2].instRD];
+		temp = regFile[line[i-2].instRS] - regFile[line[i-2].instRT];
+		EX_MEM->aluResult = temp;
 	}
 
 	//SLL
 	else if(line[i-2].instOP==0 && line[i-2].instFunct==0){
-		regFile[line[i-2].instRD] = regFile[line[i-2].instRT] << line[i-2].instShamt;
-		EX_MEM->aluResult = regFile[line[i-2].instRD];
+		temp = regFile[line[i-2].instRT] << line[i-2].instShamt;
+		EX_MEM->aluResult = temp;
 		//EX_MEM->aluResult = 999;
 	}
 
 	//ANDI
 	else if(line[i-2].instOP==12){
-		regFile[line[i-2].instRT] = regFile[line[i-2].instRS] & line[i-2].instImm;
-		EX_MEM->aluResult = regFile[line[i-2].instRT];
+		temp = regFile[line[i-2].instRS] & line[i-2].instImm;
+		EX_MEM->aluResult = temp;
 	}
 
 	//ORI
 	else if(line[i-2].instOP==13){
-		regFile[line[i-2].instRT] = regFile[line[i-2].instRS] | line[i-2].instImm;
+		temp = regFile[line[i-2].instRS] | line[i-2].instImm;
 		//printf("\t%d\t", regFile[line[i-2].instRS]);
 		//printf("\t%d\t", line[i-2].instImm);
-		EX_MEM->aluResult = regFile[line[i-2].instRT];
+		EX_MEM->aluResult = temp;
 		//EX_MEM->aluResult = 999;
 	}
 
 	//LW
 	else if(line[i-2].instOP==35){
-		regFile[line[i-2].instRT] = dataMem[regFile[line[i-2].instRS] + line[i-2].instImm];
+		//regFile[line[i-2].instRT] = dataMem[regFile[line[i-2].instRS] + line[i-2].instImm];
 		EX_MEM->aluResult = regFile[line[i-2].instRS] + line[i-2].instImm;
 	}
 
 	//SW
 	else if(line[i-2].instOP==43){
-		regFile[line[i-2].instRT] = dataMem[regFile[line[i-2].instRS] + line[i-2].instImm];
-		EX_MEM->aluResult = regFile[line[i-2].instRT];
+		temp = dataMem[regFile[line[i-2].instRS] + line[i-2].instImm];
+		EX_MEM->aluResult = temp;
 	}
 
 	//EX_MEM->aluResult = 999;
@@ -361,11 +369,48 @@ void fillMEM_WB(struct MEM_WB_ *MEM_WB, struct INSTRUCT line[], int i){
 	}
 
 	//I Type
-	else if(line[i-3].instType==2){
+	else{
 		MEM_WB->writeDataMem = 0;
 		MEM_WB->writeDataALU = 0;
 		MEM_WB->writeReg = 0;
 
+	}
+
+
+
+	//ADD
+	if(line[i-3].instOP==0 && line[i-3].instFunct==32){
+		regFile[line[i-3].instRD] = regFile[line[i-3].instRS] + regFile[line[i-3].instRT];
+	}
+
+	//SUB
+	else if(line[i-3].instOP==0 && line[i-3].instFunct==34){
+		regFile[line[i-3].instRD] = regFile[line[i-3].instRS] - regFile[line[i-3].instRT];
+	}
+
+	//SLL
+	else if(line[i-3].instOP==0 && line[i-3].instFunct==0){
+		regFile[line[i-3].instRD] = regFile[line[i-3].instRT] << line[i-3].instShamt;
+	}
+
+	//ANDI
+	else if(line[i-3].instOP==12){
+		regFile[line[i-3].instRT] = regFile[line[i-3].instRS] & line[i-3].instImm;
+	}
+
+	//ORI
+	else if(line[i-3].instOP==13){
+		regFile[line[i-3].instRT] = regFile[line[i-3].instRS] | line[i-3].instImm;
+	}
+
+	//LW
+	else if(line[i-3].instOP==35){
+		regFile[line[i-3].instRT] = dataMem[regFile[line[i-3].instRS] + line[i-3].instImm];
+	}
+
+	//SW
+	else if(line[i-3].instOP==43){
+		regFile[line[i-3].instRT] = dataMem[regFile[line[i-3].instRS] + line[i-3].instImm];
 	}
 
 
