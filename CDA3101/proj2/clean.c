@@ -303,56 +303,64 @@ void nextState(struct processorState *lastState, struct processorState *currentS
 
 		//LW
 		else if(line[i-2].instOP==35){
-			currentState->EX_MEM.aluResult = regFile[line[i-2].instRS] + line[i-2].instImm;
+			//currentState->EX_MEM.aluResult = regFile[line[i-2].instRS] + line[i-2].instImm;
+			currentState->EX_MEM.aluResult = line[i-2].instRS + line[i-2].instImm;
 			currentState->EX_MEM.writeReg = line[i-2].instRT;
 		}
 
 		//SW
 		else if(line[i-2].instOP==43){
+			//currentState->EX_MEM.aluResult = regFile[line[i-2].instRS] + line[i-2].instImm/4;
 			currentState->EX_MEM.aluResult = regFile[line[i-2].instRS] + line[i-2].instImm/4;
 			currentState->EX_MEM.writeDataReg = regFile[line[i-2].instRT];
 			//currentState->EX_MEM.aluResult = temp;
 			//currentState->EX_MEM.writeReg = line[i-2].instRT;
-			printf("\n%d\n%d\n", regFile[line[i-2].instRS], line[i-2].instImm/4);
+			//printf("\n%d\n%d\n", regFile[line[i-2].instRS], line[i-2].instImm/4);
 		}
 
 	//MEM_WB
-		//ADD
-		if(line[i-3].instOP==0 && line[i-3].instFunct==32){
-			regFile[line[i-3].instRD] = regFile[line[i-3].instRS] + regFile[line[i-3].instRT];
-		}
-
-		//SUB
-		else if(line[i-3].instOP==0 && line[i-3].instFunct==34){
-			regFile[line[i-3].instRD] = regFile[line[i-3].instRS] - regFile[line[i-3].instRT];
-		}
-
-		//SLL
-		else if(line[i-3].instOP==0 && line[i-3].instFunct==0){
-			regFile[line[i-3].instRD] = regFile[line[i-3].instRT] << line[i-3].instShamt;
-		}
-
-		//ANDI
-		else if(line[i-3].instOP==12){
-			regFile[line[i-3].instRT] = regFile[line[i-3].instRS] & line[i-3].instImm;
-		}
-
-		//ORI
-		else if(line[i-3].instOP==13){
-			regFile[line[i-3].instRT] = regFile[line[i-3].instRS] | line[i-3].instImm;
-		}
-
-		//LW
 		else if(line[i-3].instOP==35){
-			regFile[line[i-3].instRT] = dataMem[regFile[line[i-3].instRS] + (line[i-3].instImm/4)];
-			printf("\n%d\n%d\n%d\n", regFile[line[i-3].instRS], line[i-3].instImm/4, dataMem[regFile[line[i-3].instRS] + line[i-3].instImm]);
+			currentState->MEM_WB.writeDataMem = dataMem[regFile[line[i-3].instRS] + line[i-3].instImm/4];
 		}
 
 		//SW
 		else if(line[i-3].instOP==43){
 			dataMem[regFile[line[i-3].instRS] + line[i-3].instImm/4] = regFile[line[i-3].instRT];
-			//printf("\n%d\n%d\n%d\n", regFile[line[i-3].instRS], line[i-3].instImm/4, dataMem[regFile[line[i-3].instRS] + line[i-3].instImm]);
+			printf("\n%d\n%d", regFile[line[i-3].instRS] + line[i-3].instImm/4, regFile[line[i-3].instRT]);
 		}	
+
+
+	//Reg Update
+		//ADD
+		if(line[i-4].instOP==0 && line[i-4].instFunct==32){
+			regFile[line[i-4].instRD] = regFile[line[i-4].instRS] + regFile[line[i-4].instRT];
+		}
+
+		//SUB
+		else if(line[i-4].instOP==0 && line[i-4].instFunct==34){
+			regFile[line[i-4].instRD] = regFile[line[i-4].instRS] - regFile[line[i-4].instRT];
+		}
+
+		//SLL
+		else if(line[i-4].instOP==0 && line[i-4].instFunct==0){
+			regFile[line[i-4].instRD] = regFile[line[i-4].instRT] << line[i-4].instShamt;
+		}
+
+		//ANDI
+		else if(line[i-4].instOP==12){
+			regFile[line[i-4].instRT] = regFile[line[i-4].instRS] & line[i-4].instImm;
+		}
+
+		//ORI
+		else if(line[i-4].instOP==13){
+			regFile[line[i-4].instRT] = regFile[line[i-4].instRS] | line[i-4].instImm;
+		}
+
+		//LW
+		else if(line[i-4].instOP==35){
+			regFile[line[i-4].instRT] = dataMem[regFile[line[i-4].instRS] + (line[i-4].instImm/4)];
+			//printf("\n%d\n%d\n%d\n", regFile[line[i-3].instRS], line[i-3].instImm/4, dataMem[regFile[line[i-3].instRS] + line[i-3].instImm]);
+		}
 
 
 
@@ -479,7 +487,8 @@ void printOutput(struct processorState *currentState, int i, struct INSTRUCT lin
 	printOP(line, i);
 	printf("\t\tPCPlus4: %d\n", currentState->IF_ID.PCPlus4);
 	printf("\tID/EX:\n");
-	printf("\t\tInstruction: \n");
+	printf("\t\tInstruction: ");
+	printOP(line, i-1);
 	printf("\t\tPCPlus4: %d\n", currentState->ID_EX.PCPlus4);
 	printf("\t\tbranchTarget: %d\n", currentState->ID_EX.branchTarget);
 	printf("\t\treadData1: %d\n", currentState->ID_EX.readData1);
@@ -492,13 +501,15 @@ void printOutput(struct processorState *currentState, int i, struct INSTRUCT lin
 	printf("\t\trd: ");
 	intoReg(currentState->ID_EX.rd);
 	printf("\tEX/MEM:\n");
-	printf("\t\tInstruction: \n");
+	printf("\t\tInstruction: ");
+	printOP(line, i-2);
 	printf("\t\taluResult: %d\n", currentState->EX_MEM.aluResult);
 	printf("\t\twriteDataReg: %d\n", currentState->EX_MEM.writeDataReg);
 	printf("\t\twriteReg: ");
 	intoReg(currentState->EX_MEM.writeReg);
 	printf("\tMEM/WB:\n");
-	printf("\t\tInstruction: \n");
+	printf("\t\tInstruction: ");
+	printOP(line, i-3);
 	printf("\t\twriteDataMem: %d\n", currentState->MEM_WB.writeDataMem);
 	printf("\t\twriteDataALU: %d\n", currentState->MEM_WB.writeDataALU);
 	printf("\t\twriteReg: ");
