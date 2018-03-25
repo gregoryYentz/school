@@ -21,7 +21,7 @@ int regFile[32];
 struct IF_ID_{
 	//string Instruction;
 	int PCPlus4;
-}; struct IF_ID_ black;
+};
 
 struct ID_EX_{
 	//string Instruction;
