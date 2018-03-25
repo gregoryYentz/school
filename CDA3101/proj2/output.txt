@@ -548,8 +548,6 @@ State at the beginning of cycle 9:
 		writeDataALU: 0
 		writeReg: 0
 
-2
-40
 ********************
 State at the beginning of cycle 10:
 	PC = 36

@@ -1,1 +1,8 @@
-Have parsed the signed integer input and stored information into INSTRUCT structure.
+Completed:
+	Reading and parsing
+	Setting up the required pipeline registers
+	Populating the data memory and maintaing the register file
+	Handling a program without hazards
+	Handling NOOP and HALT
+
+If there is no data hazards, this program works perfectly. 
