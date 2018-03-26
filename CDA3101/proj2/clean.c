@@ -51,7 +51,7 @@ struct processorState{
 	struct MEM_WB_ MEM_WB;	
 };
 
-void nextState(struct processorState *lastState, struct processorState *currentState, struct INSTRUCT line[], int i);
+void nextState(struct processorState *lastState, struct processorState *currentState, struct INSTRUCT line[], int i, int size);
 
 void printOP(struct INSTRUCT line[], int i);
 char *decimal_to_binary(int);
@@ -239,14 +239,14 @@ int main(){
 		currentState.MEM_WB.writeReg = 0;
 
 	for(i=3; i<size+8; i++){
-		nextState(&lastState, &currentState, line, i);
+		nextState(&lastState, &currentState, line, i, size);
 		printOutput(&currentState, i, line);
 	}
 
 	return 0;
 }
 
-void nextState(struct processorState *lastState, struct processorState *currentState, struct INSTRUCT line[], int i){
+void nextState(struct processorState *lastState, struct processorState *currentState, struct INSTRUCT line[], int i, int size){
 	currentState->IF_ID.PCPlus4 = PC;
 	currentState->ID_EX.PCPlus4 = lastState->IF_ID.PCPlus4;
 	currentState->ID_EX.branchTarget = 0;
@@ -262,6 +262,43 @@ void nextState(struct processorState *lastState, struct processorState *currentS
 	currentState->MEM_WB.writeDataMem = 0;
 	currentState->MEM_WB.writeDataALU = lastState->EX_MEM.aluResult;
 	currentState->MEM_WB.writeReg = lastState->EX_MEM.writeReg;
+
+	//Reg Update
+		//ADD
+		if(line[i-4].instOP==0 && line[i-4].instFunct==32){
+			regFile[line[i-4].instRD] = regFile[line[i-4].instRS] + regFile[line[i-4].instRT];
+		}
+
+		//SUB
+		else if(line[i-4].instOP==0 && line[i-4].instFunct==34){
+			regFile[line[i-4].instRD] = regFile[line[i-4].instRS] - regFile[line[i-4].instRT];
+		}
+
+		//SLL
+		else if(line[i-4].instOP==0 && line[i-4].instFunct==0){
+			regFile[line[i-4].instRD] = regFile[line[i-4].instRT] << line[i-4].instShamt;
+		}
+
+		//ANDI
+		else if(line[i-4].instOP==12){
+			regFile[line[i-4].instRT] = regFile[line[i-4].instRS] & line[i-4].instImm;
+		}
+
+		//ORI
+		else if(line[i-4].instOP==13){
+			regFile[line[i-4].instRT] = regFile[line[i-4].instRS] | line[i-4].instImm;
+		}
+
+		//LW
+		else if(line[i-4].instOP==35){
+			regFile[line[i-4].instRT] = dataMem[regFile[line[i-4].instRS] + (line[i-4].instImm/4) - ((size+1)*4)];
+		}
+
+	//ID_EX
+		if(line[i-1].instType==1){
+			currentState->ID_EX.readData1 = regFile[line[i-1].instRS];
+			currentState->ID_EX.readData2 = regFile[line[i-1].instRT];
+		}
 
 	//EX_MEM		
 		//ADD
@@ -308,13 +345,13 @@ void nextState(struct processorState *lastState, struct processorState *currentS
 		}
 
 	//MEM_WB
-		else if(line[i-3].instOP==35){
-			currentState->MEM_WB.writeDataMem = dataMem[regFile[line[i-3].instRS] + line[i-3].instImm/4];
+		if(line[i-3].instOP==35){
+			currentState->MEM_WB.writeDataMem = dataMem[regFile[line[i-3].instRS] + (line[i-3].instImm/4) - ((size+1)*4)];
 		}
 
 		//SW
 		else if(line[i-3].instOP==43){
-			dataMem[regFile[line[i-3].instRS] + line[i-3].instImm/4] = regFile[line[i-3].instRT];
+			dataMem[regFile[line[i-3].instRS] + (line[i-3].instImm/4) - ((size+1)*4)] = regFile[line[i-3].instRT];
 		}	
 
 
@@ -346,7 +383,7 @@ void nextState(struct processorState *lastState, struct processorState *currentS
 
 		//LW
 		else if(line[i-4].instOP==35){
-			regFile[line[i-4].instRT] = dataMem[regFile[line[i-4].instRS] + (line[i-4].instImm/4)];
+			regFile[line[i-4].instRT] = dataMem[regFile[line[i-4].instRS] + (line[i-4].instImm/4) - ((size+1)*4)];
 		}
 
 
