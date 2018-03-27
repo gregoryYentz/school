@@ -1,9 +1,8 @@
 	.text
 	ori	$s0,$0,36
-	lw	$t0,0($s0)
-	lw	$t1,4($s0)
-	add	$t2,$t0,$t1
-	sw	$t2,8($s0)
+	ori	$s1,$0,13
+	sub	$s2,$s0,$s1
+	sub	$s3,$s1,$s0
 	halt
 	.data
 Data1:	.word	15

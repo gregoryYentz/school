@@ -51,7 +51,7 @@ struct processorState{
 	struct MEM_WB_ MEM_WB;	
 };
 
-void nextState(struct processorState *lastState, struct processorState *currentState, struct INSTRUCT line[], int i, int size);
+void nextState(struct processorState *lastState, struct processorState *currentState, struct INSTRUCT line[], int i);
 
 void printOP(struct INSTRUCT line[], int i);
 char *decimal_to_binary(int);
@@ -239,14 +239,14 @@ int main(){
 		currentState.MEM_WB.writeReg = 0;
 
 	for(i=3; i<size+8; i++){
-		nextState(&lastState, &currentState, line, i, size);
+		nextState(&lastState, &currentState, line, i);
 		printOutput(&currentState, i, line);
 	}
 
 	return 0;
 }
 
-void nextState(struct processorState *lastState, struct processorState *currentState, struct INSTRUCT line[], int i, int size){
+void nextState(struct processorState *lastState, struct processorState *currentState, struct INSTRUCT line[], int i){
 	currentState->IF_ID.PCPlus4 = PC;
 	currentState->ID_EX.PCPlus4 = lastState->IF_ID.PCPlus4;
 	currentState->ID_EX.branchTarget = 0;
@@ -262,13 +262,6 @@ void nextState(struct processorState *lastState, struct processorState *currentS
 	currentState->MEM_WB.writeDataMem = 0;
 	currentState->MEM_WB.writeDataALU = lastState->EX_MEM.aluResult;
 	currentState->MEM_WB.writeReg = lastState->EX_MEM.writeReg;
-
-
-	//ID_EX
-		if(line[i-1].instType==1){
-			currentState->ID_EX.readData1 = regFile[line[i-1].instRS];
-			currentState->ID_EX.readData2 = regFile[line[i-1].instRT];
-		}
 
 	//EX_MEM		
 		//ADD
@@ -315,16 +308,13 @@ void nextState(struct processorState *lastState, struct processorState *currentS
 		}
 
 	//MEM_WB
-		//LW
-		if(line[i-3].instOP==35){
-			currentState->MEM_WB.writeDataMem = dataMem[regFile[line[i-3].instRS] + (line[i-3].instImm/4) - ((size+1)*4)];
-			//printf("\n%d\n%d\n%d\n", regFile[line[i-3].instRS], (line[i-3].instImm/4), ((size+1)*4));
+		else if(line[i-3].instOP==35){
+			currentState->MEM_WB.writeDataMem = dataMem[regFile[line[i-3].instRS] + line[i-3].instImm/4];
 		}
 
 		//SW
 		else if(line[i-3].instOP==43){
-			dataMem[regFile[line[i-3].instRS] + (line[i-3].instImm/4) - ((size+1)*4)] = regFile[line[i-3].instRT];
-			//printf("\n%d\n%d\n%d", regFile[line[i-3].instRT], regFile[line[i-3].instRS], (line[i-3].instImm/4));
+			dataMem[regFile[line[i-3].instRS] + line[i-3].instImm/4] = regFile[line[i-3].instRT];
 		}	
 
 
@@ -356,7 +346,7 @@ void nextState(struct processorState *lastState, struct processorState *currentS
 
 		//LW
 		else if(line[i-4].instOP==35){
-			regFile[line[i-4].instRT] = dataMem[regFile[line[i-4].instRS] + (line[i-4].instImm/4) - ((size+1)*4)];
+			regFile[line[i-4].instRT] = dataMem[regFile[line[i-4].instRS] + (line[i-4].instImm/4)];
 		}
 
 
