@@ -108,44 +108,47 @@ int main(){
 			line[i+4].instRT = temp;
 			temp = 0;
 
-			//fill instType and instFunct
+			//R Types
 			if(line[i+4].instOP==32||line[i+4].instOP==34||line[i+4].instOP==0){
 				line[i+4].instType = 1;
+				line[i+4].instImm = 0;
+
+				//fill instRD
+				for(j=16; j<21; j++){
+					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-20));
+				}
+				line[i+4].instRD = temp;
+				temp = 0;
+
+				//fill instShamt
+				for(j=21; j<26; j++){
+					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-25));
+				}
+				line[i+4].instShamt = temp;
+				temp = 0;
+
+				//fill instFunct
+				for(j=26; j<32; j++){
+					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-31));
+				}
+				line[i+4].instFunct = temp;
+				temp = 0;
 			}
 
 			//I Types
 			else if(line[i+4].instOP==35||line[i+4].instOP==43||line[i+4].instOP==12||line[i+4].instOP==13||line[i+4].instOP==5){
 				line[i+4].instType = 2;
+				line[i+4].instRD = 0;
+				line[i+4].instShamt = 0;
 				line[i+4].instFunct = 0;
-			}
 
-			//fill instRD
-			for(j=16; j<21; j++){
-				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-20));
+				//fill instImm
+				for(j=16; j<32; j++){
+					temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-31));
+				}
+				line[i+4].instImm = temp;
+				temp = 0;
 			}
-			line[i+4].instRD = temp;
-			temp = 0;
-
-			//fill instShamt
-			for(j=21; j<26; j++){
-				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-25));
-			}
-			line[i+4].instShamt = temp;
-			temp = 0;
-
-			//fill instFunct
-			for(j=26; j<32; j++){
-				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-31));
-			}
-			line[i+4].instFunct = temp;
-			temp = 0;
-
-			//fill instImm
-			for(j=16; j<32; j++){
-				temp += (*(binInst[i]+j)-48) * ipow(2, abs(j-31));
-			}
-			line[i+4].instImm = temp;
-			temp = 0;
 
 			//fill instAddress
 			line[i+4].instAddress = (i+1)*4;
@@ -248,12 +251,6 @@ int main(){
 		printOutput(&currentState, i, line);
 	}
 
-	printf("\n********************\n");
-	printf("Total number of cycles executed:%d\n", i-3);
-	printf("Total number of stalls: 0\n");
-	printf("Total number of branches: 0\n");
-	printf("Total number of mispredicted branches: 0\n");
-
 	return 0;
 }
 
@@ -276,11 +273,20 @@ void nextState(struct processorState *lastState, struct processorState *currentS
 	currentState->MEM_WB.writeDataALU = lastState->EX_MEM.aluResult;
 	currentState->MEM_WB.writeReg = lastState->EX_MEM.writeReg;
 
+
 	//ID_EX
 		if(line[i-1].instType==1){
 			currentState->ID_EX.readData1 = regFile[line[i-1].instRS];
 			currentState->ID_EX.readData2 = regFile[line[i-1].instRT];
 		}
+
+	//Data Hazard
+	if(currentState->ID_EX.readData1 == lastState->EX_MEM.writeReg || currentState->ID_EX.readData2 == lastState->EX_MEM.writeReg){
+		//callDataHazardFunct();
+
+
+	}
+
 
 
 	//EX_MEM		
@@ -331,53 +337,49 @@ void nextState(struct processorState *lastState, struct processorState *currentS
 		//LW
 		if(line[i-3].instOP==35){
 			currentState->MEM_WB.writeDataMem = dataMem[regFile[line[i-3].instRS] + (line[i-3].instImm/4) - ((size+1)*4)];
+			//printf("\n%d\n%d\n%d\n", regFile[line[i-3].instRS], (line[i-3].instImm/4), ((size+1)*4));
 		}
 
 		//SW
 		else if(line[i-3].instOP==43){
 			dataMem[regFile[line[i-3].instRS] + (line[i-3].instImm/4) - ((size+1)*4)] = regFile[line[i-3].instRT];
+			//printf("\n%d\n%d\n%d", regFile[line[i-3].instRT], regFile[line[i-3].instRS], (line[i-3].instImm/4));
 		}	
+
 
 	//Reg Update
 		//ADD
 		if(line[i-4].instOP==0 && line[i-4].instFunct==32){
 			regFile[line[i-4].instRD] = regFile[line[i-4].instRS] + regFile[line[i-4].instRT];
-			//regFile[line[i-4].instRD] = lastState->EX_MEM.aluResult;
 		}
 
 		//SUB
 		else if(line[i-4].instOP==0 && line[i-4].instFunct==34){
 			regFile[line[i-4].instRD] = regFile[line[i-4].instRS] - regFile[line[i-4].instRT];
-			//regFile[line[i-4].instRD] = lastState->EX_MEM.aluResult;
 		}
 
 		//SLL
 		else if(line[i-4].instOP==0 && line[i-4].instFunct==0){
 			regFile[line[i-4].instRD] = regFile[line[i-4].instRT] << line[i-4].instShamt;
-			//regFile[line[i-4].instRD] = lastState->EX_MEM.aluResult;
 		}
 
 		//ANDI
 		else if(line[i-4].instOP==12){
 			regFile[line[i-4].instRT] = regFile[line[i-4].instRS] & line[i-4].instImm;
-			//regFile[line[i-4].instRT] = lastState->EX_MEM.aluResult;
 		}
 
 		//ORI
 		else if(line[i-4].instOP==13){
 			regFile[line[i-4].instRT] = regFile[line[i-4].instRS] | line[i-4].instImm;
-			//regFile[line[i-4].instRT] = lastState->EX_MEM.aluResult;
 		}
 
 		//LW
 		else if(line[i-4].instOP==35){
 			regFile[line[i-4].instRT] = dataMem[regFile[line[i-4].instRS] + (line[i-4].instImm/4) - ((size+1)*4)];
-			//regFile[line[i-4].instRT] = lastState->EX_MEM.aluResult;
 		}
 
-	
-
-	
+	//Data Forwarding
+	//if(currentState->)
 
 
 	PC=PC+4;
@@ -441,22 +443,22 @@ int ipow(int base, int exp){
 
 void intoReg(int reg){
 	if(reg==2 || reg==3){
-		printf("v%d", reg-2);
+		printf("v%d\n", reg-2);
 	}
 	else if(reg>=4 && reg<=7){
-		printf("a%d", reg-4);
+		printf("a%d\n", reg-4);
 	}
 	else if(reg>=8 && reg<=15){
-		printf("t%d", reg-8);
+		printf("t%d\n", reg-8);
 	}
 	else if(reg>=16 && reg<=23){
-		printf("s%d", reg-16);
+		printf("s%d\n", reg-16);
 	}
 	else if(reg==24 || reg==25){
-		printf("t%d", reg-16);
+		printf("t%d\n", reg-16);
 	}
 	else{
-		printf("0");
+		printf("0\n");
 	}
 }
 
@@ -512,25 +514,24 @@ void printOutput(struct processorState *currentState, int i, struct INSTRUCT lin
 	printf("\t\timmed: %d\n", currentState->ID_EX.immed);
 	printf("\t\trs: ");
 	intoReg(currentState->ID_EX.rs);
-	printf("\n\t\trt: ");
+	printf("\t\trt: ");
 	intoReg(currentState->ID_EX.rt);
-	printf("\n\t\trd: ");
+	printf("\t\trd: ");
 	intoReg(currentState->ID_EX.rd);
-	printf("\n\tEX/MEM:\n");
+	printf("\tEX/MEM:\n");
 	printf("\t\tInstruction: ");
 	printOP(line, i-2);
 	printf("\t\taluResult: %d\n", currentState->EX_MEM.aluResult);
 	printf("\t\twriteDataReg: %d\n", currentState->EX_MEM.writeDataReg);
 	printf("\t\twriteReg: ");
 	intoReg(currentState->EX_MEM.writeReg);
-	printf("\n\tMEM/WB:\n");
+	printf("\tMEM/WB:\n");
 	printf("\t\tInstruction: ");
 	printOP(line, i-3);
 	printf("\t\twriteDataMem: %d\n", currentState->MEM_WB.writeDataMem);
 	printf("\t\twriteDataALU: %d\n", currentState->MEM_WB.writeDataALU);
 	printf("\t\twriteReg: ");
 	intoReg(currentState->MEM_WB.writeReg);
-	printf("\n");
 }
 
 void printOP(struct INSTRUCT line[], int i){
@@ -538,7 +539,7 @@ void printOP(struct INSTRUCT line[], int i){
 		printf("lw\n");
 	}
 	else if(line[i].instType==0){
-		printf("halt\n");
+		printf("HALT\n");
 	}
 	else if(line[i].instType==3){
 		printf("NOOP\n");
