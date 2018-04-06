@@ -1,0 +1,14 @@
+Implimentation:
+	I created a struct called BinaryNode that held the string and pointers to the left and right nodes beneath it;
+	The makeEmpty(BinaryNode* & t) function recursively deletes first the left side nodes then the right side nodes
+		starting at the node passed to the function (probably the root);
+	
+
+Complexity Analysis:
+	The private member function makeEmpty(BinaryNode* & t)'s hardest job will be if the node passed is the root node;
+	If the root node is passed, all nodes in the tree will be deleted;
+	Because each new height value of the tree has 2 nodes from each node above, the number of nodes being deleted 
+		becomes 2^h with h being the height;	
+	To convert to the value n (nodes) from h (height), the time commplexity becomes 0(log n);
+	
+Time complexity is a constant O(log(n));
