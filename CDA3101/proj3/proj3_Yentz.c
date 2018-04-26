@@ -8,6 +8,11 @@ int numOffsetBits;
 int numIndexBits;
 int numTagBits;
 int numRef;
+int WB_miss;
+int WB_hit;
+int WT_miss;
+int WT_hit;
+
 
 typedef struct line{
 	char inst;
@@ -37,16 +42,16 @@ int ipow(int base, int exp){
 
 void parse(){
 	scanf("%d", &blockSize);
-	int temp = blockSize;
+	scanf("%d", &numSets);
+	scanf("%d\n", &ativity);
+	int temp = blockSize*4;
 	numOffsetBits = 0;
 	while(temp >>= 1) ++numOffsetBits;
-	scanf("%d", &numSets);
 	temp = numSets;
 	numIndexBits = 0;
 	while(temp >>= 1) ++numIndexBits;
 	numTagBits = 32-numOffsetBits-numIndexBits;
-	scanf("%d\n", &ativity);
-
+	printf("%d %d %d\n", numTagBits, numIndexBits, numOffsetBits);
 	for(numRef=0; numRef<100; numRef++){
 		/*Fill Read/Write and Address values*/
 		scanf("%c\t%d\n", &lineArr[numRef].inst, &lineArr[numRef].addr);
@@ -74,7 +79,7 @@ void parse(){
 		}
 	}
 
-/*
+
 	int j = 0;
 	for(j=0; j<numRef; j++){
 		int i = 0;
@@ -91,33 +96,68 @@ void parse(){
 		}
 		printf(" %c\t%d\t%d\t%d\n", lineArr[j].inst, lineArr[j].tag, lineArr[j].index, lineArr[j].offset);
 	}	
-*/
+
 };
 
 void buildCache(){
-	int tagArr[ativity][numSets];
-	int cacheArr[ativity][numSets];
+	int tagArr[numSets][ativity];
+	int cacheArr[numSets][ativity];
 	int i, j;
-	for(i=0; i<ativity; i++){
-		for(j=0; j<numSets; j++){
+	for(i=0; i<numSets; i++){
+		for(j=0; j<ativity; j++){
 			tagArr[i][j] = 0;
 			cacheArr[i][j] = 0;
 		}
 	}
-
-	for(i=0; i<numSets; i++){
-		if(tagArr[0][i]==0){
-			tagArr[0][i]=lineArr[i].tag;
-		}
-		else{
-			tagArr[1][i]=lineArr[i].tag;
+	int k;
+	for(i=0; i<numRef; i++){
+		for(j=0; j<ativity; j++){
+			int match = 0;
+			for(k=0; k<j; k++){
+				if(tagArr[lineArr[i].index][k]==lineArr[i].tag){
+					match = 1;
+				}
+			}
+			/*
+			if(tagArr[lineArr[i].index][j]==0 && match==0 && lineArr[i].inst=='W'){
+				tagArr[lineArr[i].index][j]=lineArr[i].tag;
+				cacheArr[lineArr[i].index][j]=lineArr[i].tag;
+			}
+			else if(match==1 && lineArr[i].inst=='R'){
+				WT_hit++;
+			}
+			WT_miss=numRef-WT_hit;
+			*/
+			if(match==1 && lineArr[i].inst=='R'){
+				WT_hit++;
+				//tagArr[lineArr[i].index][j] = lineArr[i].tag;
+				//cacheArr[lineArr[i].index][j] = lineArr[i].tag;
+			}
+			else if(match==1 && lineArr[i].inst=='W'){
+				WT_hit++;
+				tagArr[lineArr[i].index][j] = lineArr[i].tag;
+				cacheArr[lineArr[i].index][j] = lineArr[i].tag;
+			}
+			else if(match==0 && lineArr[i].inst=='R'){
+				WT_miss++;
+				tagArr[lineArr[i].index][j] = lineArr[i].tag;
+				cacheArr[lineArr[i].index][j] = lineArr[i].tag;
+			}
+			else if(match==0 && lineArr[i].inst=='W'){
+				WT_miss++;
+				
+			}
 		}
 	}
 
-	for(i=0; i<numSets; i++){
-		printf("%d\t%d\n", tagArr[0][i], tagArr[1][i]);
-	}
 
+	for(i=0; i<numSets; i++){
+		printf("%d\t", i);
+		for(j=0; j<ativity; j++){
+			printf("%d\t", tagArr[i][j]);
+		}
+		printf("\n");
+	}
 
 };
 
@@ -132,28 +172,29 @@ void output(){
 	printf("Write-through with No Write Allocate\n");
 	printf("****************************************\n");
 	printf("Total number of references: %d\n", numRef);
-	printf("Hits: %d\n", 1);
-	printf("Misses: %d\n", 6);
+	printf("Hits: %d\n", WT_hit);
+	printf("Misses: %d\n", WT_miss);
 	printf("Memory References: %d\n", numRef);
 	printf("****************************************\n");
 	printf("Write-back with Write Allocate\n");
 	printf("****************************************\n");
 	printf("Total number of references: %d\n", numRef);
-	printf("Hits: %d\n", 2);
-	printf("Misses: %d\n", 5);
-	printf("Memory References: %d\n", 6);
-
-
-
+	printf("Hits: %d\n", WB_hit);
+	printf("Misses: %d\n", WB_miss);
+	printf("Memory References: %d\n", 0);
 };
 
 int main(){
 	blockSize = 0;
 	numSets = 0;
 	ativity = 0;
+	WT_hit=0;
+	WT_miss=0;
+	WB_hit=0;
+	WB_miss=0;
 	parse();
 	buildCache();
-
+	
 
 	output();
 
