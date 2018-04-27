@@ -44,14 +44,13 @@ void parse(){
 	scanf("%d", &blockSize);
 	scanf("%d", &numSets);
 	scanf("%d\n", &ativity);
-	int temp = blockSize*4;
+	int temp = blockSize;
 	numOffsetBits = 0;
 	while(temp >>= 1) ++numOffsetBits;
 	temp = numSets;
 	numIndexBits = 0;
 	while(temp >>= 1) ++numIndexBits;
 	numTagBits = 32-numOffsetBits-numIndexBits;
-	printf("%d %d %d\n", numTagBits, numIndexBits, numOffsetBits);
 	for(numRef=0; numRef<100; numRef++){
 		/*Fill Read/Write and Address values*/
 		scanf("%c\t%d\n", &lineArr[numRef].inst, &lineArr[numRef].addr);
@@ -59,7 +58,7 @@ void parse(){
 			break;
 		}
 		
-		/*Fill Offset, Index, and Tag values*/		
+		/*Fill Offset, Index, and Tag integer values*/		
 		int i;
 		int temp = lineArr[numRef].addr;
 		lineArr[numRef].offset = 0;
@@ -78,8 +77,8 @@ void parse(){
 			temp = temp>>1;
 		}
 	}
-
-
+/*
+	//Print Binary String and Integer Values of each instruction
 	int j = 0;
 	for(j=0; j<numRef; j++){
 		int i = 0;
@@ -96,69 +95,64 @@ void parse(){
 		}
 		printf(" %c\t%d\t%d\t%d\n", lineArr[j].inst, lineArr[j].tag, lineArr[j].index, lineArr[j].offset);
 	}	
-
+*/
 };
 
 void buildCache(){
 	int tagArr[numSets][ativity];
-	int cacheArr[numSets][ativity];
+	/*	[0][0][0] holds the tag integer
+		[0][0][1] holds the LRU value*/
+	int cacheArr[numSets][ativity][2];
 	int i, j;
 	for(i=0; i<numSets; i++){
 		for(j=0; j<ativity; j++){
 			tagArr[i][j] = 0;
-			cacheArr[i][j] = 0;
+			cacheArr[i][j][0] = 0;
+			cacheArr[i][j][1] = 0;
 		}
 	}
 	int k;
 	for(i=0; i<numRef; i++){
-		for(j=0; j<ativity; j++){
-			int match = 0;
-			for(k=0; k<j; k++){
-				if(tagArr[lineArr[i].index][k]==lineArr[i].tag){
-					match = 1;
-				}
-			}
-			/*
-			if(tagArr[lineArr[i].index][j]==0 && match==0 && lineArr[i].inst=='W'){
-				tagArr[lineArr[i].index][j]=lineArr[i].tag;
-				cacheArr[lineArr[i].index][j]=lineArr[i].tag;
-			}
-			else if(match==1 && lineArr[i].inst=='R'){
-				WT_hit++;
-			}
-			WT_miss=numRef-WT_hit;
-			*/
-			if(match==1 && lineArr[i].inst=='R'){
-				WT_hit++;
-				//tagArr[lineArr[i].index][j] = lineArr[i].tag;
-				//cacheArr[lineArr[i].index][j] = lineArr[i].tag;
-			}
-			else if(match==1 && lineArr[i].inst=='W'){
-				WT_hit++;
-				tagArr[lineArr[i].index][j] = lineArr[i].tag;
-				cacheArr[lineArr[i].index][j] = lineArr[i].tag;
-			}
-			else if(match==0 && lineArr[i].inst=='R'){
-				WT_miss++;
-				tagArr[lineArr[i].index][j] = lineArr[i].tag;
-				cacheArr[lineArr[i].index][j] = lineArr[i].tag;
-			}
-			else if(match==0 && lineArr[i].inst=='W'){
-				WT_miss++;
-				
+		int match = 0;
+		for(k=0; k<ativity; k++){
+			if(tagArr[lineArr[i].index][k]==lineArr[i].tag && lineArr[i].tag!=0){
+				match = 1;
 			}
 		}
+		if(match==1 && lineArr[i].inst=='R'){
+			WT_hit++;
+		//	printf("Hit Read\n");
+		//	tagArr[lineArr[i].index][j] = lineArr[i].tag;
+		//	cacheArr[lineArr[i].index][j][0] = lineArr[i].tag;
+		}
+		else if(match==1 && lineArr[i].inst=='W'){
+			WT_hit++;
+		//	printf("Hit Write\n");
+		//	tagArr[lineArr[i].index][j] = lineArr[i].tag;
+		//	cacheArr[lineArr[i].index][j][0] = lineArr[i].tag;
+		}
+		else if(match==0 && lineArr[i].inst=='R'){
+			WT_miss++;
+		//	printf("Miss Read\n");
+			tagArr[lineArr[i].index][j] = lineArr[i].tag;
+			cacheArr[lineArr[i].index][j][0] = lineArr[i].tag;
+		}
+		else if(match==0 && lineArr[i].inst=='W'){
+			WT_miss++;
+		//	printf("Miss Write\n");
+			
+		}
 	}
-
-
+/*
+	//Print Tag Array
 	for(i=0; i<numSets; i++){
 		printf("%d\t", i);
 		for(j=0; j<ativity; j++){
-			printf("%d\t", tagArr[i][j]);
+			printf("%d\t", cacheArr[i][j][0]);
 		}
 		printf("\n");
 	}
-
+*/
 };
 
 void output(){
@@ -192,10 +186,9 @@ int main(){
 	WT_miss=0;
 	WB_hit=0;
 	WB_miss=0;
+
 	parse();
 	buildCache();
-	
-
 	output();
 
 	return 0;
