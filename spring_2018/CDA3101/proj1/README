@@ -1,0 +1,12 @@
+Gregory Yentz
+gcy16
+
+I have the first pass done pretty well
+The labels are stored with the addresses and the LA instructio is converted to the LUI and SLL instructions
+	with the appropriate information being shared between the two.
+
+What I do not have completed is the second pass.
+I am able to convert the registers to their decimal equivalents, but not the label matching, nor the memory
+	storing or loading.
+
+

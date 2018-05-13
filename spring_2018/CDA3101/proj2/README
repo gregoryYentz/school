@@ -1,0 +1,16 @@
+Completed:
+	Reading and parsing
+	Setting up the required pipeline registers
+	Populating the data memory and maintaing the register file
+	Handling NOOP and HALT
+
+Not Completed:
+	Branch Prediction
+	Stalling
+
+Maybe Completed:
+	Forwarding
+
+I think I have a problem were I update the register file too early, however it only occurs with some inputs so it's been hard to find the issue in the code.
+
+	

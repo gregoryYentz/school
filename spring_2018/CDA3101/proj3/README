@@ -1,0 +1,11 @@
+Completed:
+	Reading and parsing
+	Calculating the bits for tag, index and offset
+
+Partial/Has Issues:
+	Implementing Least Recently Used Policy
+	Managing Associativity
+	Write-through, no-write allocate cache
+
+Not Completed:
+	Simulating a write-back, write allocate cache
